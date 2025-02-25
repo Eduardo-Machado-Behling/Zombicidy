@@ -1,46 +1,29 @@
-import com.jogamp.opengl.*;
-import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.util.FPSAnimator;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 
-import javax.swing.*;
-
-public class Main implements GLEventListener {
-	@Override
-	public void init(GLAutoDrawable drawable) {
-		// Initialization code
-	}
-
-	@Override
-	public void dispose(GLAutoDrawable drawable) {
-		// Cleanup code
-	}
-
-	@Override
-	public void display(GLAutoDrawable drawable) {
-		GL2 gl = drawable.getGL().getGL2();
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		gl.glClearColor(0.0f, 0.0f, 1.0f, 1.0f); // Blue background
-	}
-
-	@Override
-	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-		GL2 gl = drawable.getGL().getGL2();
-		gl.glViewport(0, 0, width, height);
-	}
-
+public class Main {
 	public static void main(String[] args) {
-		JFrame frame = new JFrame("JOGL Demo");
-		GLProfile profile = GLProfile.get(GLProfile.GL4); // Use GL4 core profile
-		GLCapabilities capabilities = new GLCapabilities(profile);
-		GLCanvas canvas = new GLCanvas(capabilities);
-		canvas.addGLEventListener(new Main());
+		if (!GLFW.glfwInit()) {
+			throw new IllegalStateException("Failed to initialize GLFW!");
+		}
 
-		frame.getContentPane().add(canvas);
-		frame.setSize(800, 600);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
+		long window = GLFW.glfwCreateWindow(800, 600, "LWJGL Window", 0, 0);
+		if (window == 0) {
+			throw new RuntimeException("Failed to create the GLFW window");
+		}
 
-		FPSAnimator animator = new FPSAnimator(canvas, 60);
-		animator.start();
+		GLFW.glfwMakeContextCurrent(window);
+		GL.createCapabilities();
+
+		while (!GLFW.glfwWindowShouldClose(window)) {
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+
+			GLFW.glfwSwapBuffers(window);
+			GLFW.glfwPollEvents();
+		}
+
+		GLFW.glfwDestroyWindow(window);
+		GLFW.glfwTerminate();
 	}
 }

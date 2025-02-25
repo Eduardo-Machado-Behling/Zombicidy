@@ -14,19 +14,50 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <dependencies>
-        <!-- JOGL -->
-        <dependency>
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all-main</artifactId>
-            <version>2.3.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt-main</artifactId>
-            <version>2.3.2</version>
-        </dependency>
-    </dependencies>
+<dependencies>
+    <!-- LWJGL Core -->
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl</artifactId>
+        <version>3.3.2</version>
+    </dependency>
+
+    <!-- LWJGL OpenGL -->
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-opengl</artifactId>
+        <version>3.3.2</version>
+    </dependency>
+
+    <!-- LWJGL GLFW (for windowing) -->
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-glfw</artifactId>
+        <version>3.3.2</version>
+    </dependency>
+
+    <!-- LWJGL Natives (for your OS) -->
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl</artifactId>
+        <version>3.3.2</version>
+        <classifier>natives-linux</classifier> <!-- Change for Windows/macOS -->
+    </dependency>
+
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-opengl</artifactId>
+        <version>3.3.2</version>
+        <classifier>natives-linux</classifier> <!-- Change for your OS -->
+    </dependency>
+
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-glfw</artifactId>
+        <version>3.3.2</version>
+        <classifier>natives-linux</classifier> <!-- Change for your OS -->
+    </dependency>
+</dependencies>
 
     <build>
         <plugins>
