@@ -22,4 +22,9 @@ public class Gun extends Item {
             return 0;
         }
     }
+
+    @Override 
+    public String toString() {
+        return "Gun";
+    }
 }

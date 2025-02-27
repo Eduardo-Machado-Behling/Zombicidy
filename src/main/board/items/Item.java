@@ -1,5 +1,7 @@
 package main.board.items;
 
-public abstract class Item {
+import main.board.GetTypeName;
+
+public abstract class Item extends GetTypeName{
 
 }

@@ -1,6 +1,6 @@
 package main.board;
 
-public abstract class Grid {
+public abstract class Grid extends GetTypeName {
     protected int[] position = new int[2];
 
     public int[] getPosition() {
