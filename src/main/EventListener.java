@@ -1,6 +1,5 @@
-package main.eventmanager;
+package main;
 
 public class EventListener {
-
     
 }

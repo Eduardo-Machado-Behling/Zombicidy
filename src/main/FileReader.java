@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class FileReader {
-    public Map<String, String[]> ReadDifficulty( String difficulty ) {
+    public Map<String, String[]> ReadSettings( String difficulty ) {
         Map<String, String[]> gameSettings = new HashMap<String, String[]>();
         try {
             File myObj = new File( "gamesettings/" + difficulty + ".csv" );;
