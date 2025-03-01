@@ -2,7 +2,10 @@ package main.board;
 
 import main.board.characters.*; 
 import java.util.ArrayList;
+import java.util.Map;
+
 import main.board.scenery.*;
+import main.FileReader;
 
 
 public class Board {
@@ -10,9 +13,11 @@ public class Board {
     private Combat combat;
     private Player player;
     private ArrayList<CommomZombie> zombies;
+    private Map<String, String[]> gameSettings;
 
-    public Board( Grid[][] board ) {
-        this.board = board;
+    public Board( String difficulty , boolean load ) {
+        FileReader fileReader = new FileReader();
+        gameSettings = fileReader.ReadDifficulty( difficulty );
     }
 
     public String test() {
@@ -58,8 +63,12 @@ public class Board {
     public boolean IsValidMovement( int[] position ) {
         int deltaX = player.getPosition()[0] - position[0];
         int deltaY = player.getPosition()[1] - position[1];
+        int movement = player.getMovement();
         Grid grid = board[position[0]][position[1]];
-        if( deltaX <= 1 && deltaX >= -1 && deltaY <= 1 && deltaY >= -1 && !( grid.GetType().equals( "Wall") ) ) {
+        if( ( deltaX != 0 && deltaY != 0 ) || ( deltaX == 0 && deltaY == 0 ) ) {
+            return false;
+        }
+        if( deltaX <= movement && deltaX >= movement * -1 && deltaY <= movement && deltaY >= movement * -1 && !( grid.GetType().equals( "Wall") ) ) {
             return true;
         } else {
             return false;
@@ -92,7 +101,8 @@ public class Board {
     }
 
     
-    public void InitiateCombat( int[] position , boolean surpriseEncounter ) {
+    public Combat InitiateCombat( int[] position , boolean surpriseEncounter ) {
         combat = new Combat( player , ( CommomZombie )board[position[0]][position[1]] , this , surpriseEncounter );
+        return combat;
     }
 }
