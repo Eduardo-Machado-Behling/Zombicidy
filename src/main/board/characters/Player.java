@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Player extends Character {
     protected int perception;
-    private ArrayList<Item> items;
+    private ArrayList<Item> items = new ArrayList<Item>();
     private Gun playerGun;
     private BeisebolBat playerBeisebalBat;
 

@@ -8,7 +8,6 @@ public class Bandage extends Item {
     }
 
     public int Heal() {
-        heal = 0;
         return heal;
     }
 }

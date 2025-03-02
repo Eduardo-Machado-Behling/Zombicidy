@@ -1,5 +1,5 @@
 package main.board.characters;
-import main.board.Grid;
+import main.board.baseclasses.Grid;
 
 public abstract class Character extends Grid {
     protected int healthPoints;

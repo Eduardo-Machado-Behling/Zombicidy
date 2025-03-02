@@ -1,4 +1,4 @@
-package main;
+package main.board;
 
 import java.io.*;
 import java.util.HashMap;
@@ -31,7 +31,8 @@ public class FileReader {
         String[][] map = new String[10][10];
         int x = 0;
         try {
-            File myObj = new File( "maps/map" + ( rand.nextInt(1) + 1 ) + ".csv" );
+            //( rand.nextInt(3) + 1 )
+            File myObj = new File( "maps/map" + ( rand.nextInt(3) + 1 ) + ".csv" );
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
                 String data = myReader.nextLine();

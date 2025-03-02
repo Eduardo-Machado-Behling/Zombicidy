@@ -1,4 +1,4 @@
-package main.board;
+package main.board.combat;
 
 import java.util.Random;
 

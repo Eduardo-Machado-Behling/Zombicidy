@@ -1,21 +1,20 @@
 package main.board;
 
-import main.board.characters.*; 
+import main.board.baseclasses.Grid;
+import main.board.characters.*;
+import main.board.combat.Combat;
+
 import java.util.ArrayList;
 import java.util.Map;
-
-import javax.print.DocFlavor.INPUT_STREAM;
-
 import main.board.scenery.*;
 import main.board.items.*;
-import main.FileReader;
 import main.EventListener;
 
 public class Board {
     private Grid[][] board = new Grid[10][10];
     private Combat combat;
     private Player player;
-    private ArrayList<CommomZombie> zombies;
+    private ArrayList<CommomZombie> zombies = new ArrayList<CommomZombie>();
     private Map<String, String[]> gameSettings;
     private EventListener eventListener;
 
@@ -28,32 +27,37 @@ public class Board {
         for( int x = 0 ; x < 10 ; x++ ) {
             for( int y = 0 ; y < 10 ; y++ ) {
                 switch ( map[x][y] ) {
-                    case "null":
+                    case "Ground":
                         board[x][y] = new Ground();
                         break;
-                    case "W":
+                    case "Wall":
                         board[x][y] = new Wall();
                         break;
-                    case "P":
+                    case "Player":
                         board[x][y] = CreatePlayer();
                         player = ( Player )board[x][y];
                         break;
-                    case "Z":
-                    case "ZC":
-                    case "ZR":
-                    case "ZG":
+                    case "CommomZombie":
+                    case "CrawlerZombie":
+                    case "RunnerZombie":
+                    case "GiantZombie":
                         board[x][y] = CreateZombie( map[x][y] );
+                        zombies.add( ( CommomZombie )board[x][y] );
                         break;
-                    case "BB":
-                    case "BBB":
-                    case "BG":
+                    case "ChestBandage":
+                    case "ChestBeisebolBat":
+                    case "ChestGun":
                         board[x][y] = CreateChest( map[x][y] );
-        
+                        break;
+                    default:
+                        board[x][y] = new Ground();
+                        break;
                 }
                 position[0] = x;
                 position[1] = y;
                 board[x][y].setPosition( position );
-            }    
+            }  
+            
         } 
     }
 
@@ -64,22 +68,22 @@ public class Board {
     public Chest CreateChest( String type ) {
         String[] data;
         switch ( type ) {
-            case "BB":
+            case "ChestBandage":
                 data = gameSettings.get( "Bandage" );
                 int heal = Integer.parseInt( data[1] );
                 Bandage bandage = new Bandage( heal ); 
                 return new Chest( bandage , null);
-            case "BBB":
-                data = gameSettings.get( "BeisebalBat" );
+            case "ChestBeisebolBat":
+                data = gameSettings.get( "BeisebolBat" );
                 int bonus = Integer.parseInt( data[1] );
                 BeisebolBat beisebolBat = new BeisebolBat( bonus );
                 return new Chest( beisebolBat , null);
-            case "BG":
+            case "ChestGun":
                 data = gameSettings.get( "Gun" );
                 int damage = Integer.parseInt( data[1] );
                 int ammo = Integer.parseInt( data[2] );
                 Gun gun = new Gun( ammo, damage );
-                CrawlerZombie zombie = ( CrawlerZombie ) CreateZombie( "ZC" );
+                CrawlerZombie zombie = ( CrawlerZombie ) CreateZombie( "CrawlerZombie" );
                 return new Chest( gun , zombie );
         }
         return null;
@@ -89,22 +93,22 @@ public class Board {
         int health , movement;
         String[] data;
         switch ( type ) {
-            case "Z":
+            case "CommomZombie":
                 data = gameSettings.get( "CommomZombie" );
                 health = Integer.parseInt( data[1] );
                 movement = Integer.parseInt( data[2] );
                 return new CommomZombie( health , movement );
-            case "ZC":
+            case "CrawlerZombie":
                 data = gameSettings.get( "CrawlerZombie" );
                 health = Integer.parseInt( data[1] );
                 movement = Integer.parseInt( data[2] );
                 return new CrawlerZombie( health , movement );
-            case "ZR":
+            case "RunnerZombie":
                 data = gameSettings.get( "RunnerZombie" );
                 health = Integer.parseInt( data[1] );
                 movement = Integer.parseInt( data[2] );
                 return new RunnerZombie( health , movement );
-            case "ZG":
+            case "GiantZombie":
                 data = gameSettings.get( "GiantZombie" );
                 health = Integer.parseInt( data[1] );
                 movement = Integer.parseInt( data[2] );
@@ -146,14 +150,18 @@ public class Board {
 
     public void OpenChest( Chest chest ) {
         int[] position = chest.getPosition();
-        player.GainItem( chest.Open() );
+        Item item  = chest.Open();
+        eventListener.GainedItem(item.GetType());
+        player.GainItem( item );
         if( chest.getZombie() != null ) {
             board[position[0]][position[1]] = chest.getZombie();
-            chest.getZombie().setPosition( position );
+            board[position[0]][position[1]].setPosition( position );
+            eventListener.Redraw( position , board[position[0]][position[1]]);
             InitiateCombat( position , true );
         } else {
             board[position[0]][position[1]] = new Ground();
             board[position[0]][position[1]].setPosition( position );
+            MovePlayer( position );
         }
     }   
 
@@ -173,11 +181,13 @@ public class Board {
     }
 
     public void MovePlayer( int[] position ) {
-        int[] lastPositon = player.getPosition();
+        int[] lastPosition = player.getPosition().clone();
+        board[position[0]][position[1]] = board[lastPosition[0]][lastPosition[1]];
+        board[lastPosition[0]][lastPosition[1]] = new Ground();
+        board[lastPosition[0]][lastPosition[1]].setPosition( lastPosition );
         player.setPosition( position );
-        board[position[0]][position[1]] = player;
-        board[lastPositon[0]][lastPositon[1]] = new Ground();
-        board[lastPositon[0]][lastPositon[1]].setPosition( position );
+        eventListener.Redraw( position, board[position[0]][position[1]] );
+        eventListener.Redraw( lastPosition, board[lastPosition[0]][lastPosition[1]]);
     }
 
     public void MoveZombies( ) {
@@ -185,6 +195,7 @@ public class Board {
     }
 
     public void FinishCombat( CommomZombie zombie ) {
+        eventListener.FinishCombat();
         if( !zombie.IsAlive() ) {
             KillZombie( zombie ); 
         }
@@ -192,14 +203,19 @@ public class Board {
     }
 
     public void KillZombie( CommomZombie zombie ) {
-        int[] position = zombie.getPosition();
+        int[] position = zombie.getPosition().clone();
         board[position[0]][position[1]] = new Ground();
         board[position[0]][position[1]].setPosition( position );
+        eventListener.Redraw(position, board[position[0]][position[1]]);
+        eventListener.ZombieKilled();
     }
 
+    public void CombatAction( String choise ) {
+        combat.Action(choise);
+    }
     
-    public Combat InitiateCombat( int[] position , boolean surpriseEncounter ) {
-        combat = new Combat( player , ( CommomZombie )board[position[0]][position[1]] , this , surpriseEncounter );
-        return combat;
+    public void InitiateCombat( int[] position , boolean surpriseEncounter ) {
+        combat = new Combat( player , ( CommomZombie )board[position[0]][position[1]] , this ,eventListener );
+        combat.Init(surpriseEncounter);
     }
 }

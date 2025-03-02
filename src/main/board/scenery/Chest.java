@@ -1,7 +1,7 @@
 package main.board.scenery;
  
-import main.board.Grid;
 import main.board.items.*;
+import main.board.baseclasses.Grid;
 import main.board.characters.*;
 
 public class Chest extends Grid {

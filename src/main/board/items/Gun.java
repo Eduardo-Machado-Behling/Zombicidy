@@ -23,8 +23,4 @@ public class Gun extends Item {
         }
     }
 
-    @Override 
-    public String toString() {
-        return "Gun";
-    }
 }
