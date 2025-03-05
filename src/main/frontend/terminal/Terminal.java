@@ -87,7 +87,7 @@ public class Terminal {
     public void Print() {
         for( int x = 0 ; x < 10 ; x++ ) {
             for( int y = 0 ; y < 10 ; y++ ) {
-                System.out.print( " " + board[x][y].GetType() + " |" );
+                System.out.print( " " + x + "," + y + ":" + board[x][y].GetType() + " |" );
             }
             System.out.print( "\n" );
         }

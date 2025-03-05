@@ -3,9 +3,7 @@ package main.board;
 import main.board.baseclasses.Grid;
 import main.board.characters.*;
 import main.board.combat.Combat;
-
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 import main.board.scenery.*;
 import main.board.items.*;
 import main.EventListener;
@@ -15,6 +13,7 @@ public class Board {
     private Combat combat;
     private Player player;
     private ArrayList<CommomZombie> zombies = new ArrayList<CommomZombie>();
+    private ArrayList<CommomZombie> toRemoveZombie = new ArrayList<CommomZombie>();
     private Map<String, String[]> gameSettings;
     private EventListener eventListener;
 
@@ -132,20 +131,22 @@ public class Board {
             switch ( type ) {
                 case "Ground":
                     MovePlayer( position );
-                    break;
+                break;
                 case "Chest":
                     OpenChest( ( Chest )grid );
-                    break;
+                break;
                 case "GiantZombie":
                 case "RunnerZombie":
                 case "CrawlerZombie":
                 case "CommomZombie":
                     InitiateCombat( position , false );
-                    break;
-                default:
-                    break;
+                break;
             }
         }
+        zombies.removeAll(toRemoveZombie);
+        toRemoveZombie.clear();
+        toRemoveZombie = new ArrayList<CommomZombie>();
+        MoveZombies();
     }
 
     public void OpenChest( Chest chest ) {
@@ -191,8 +192,36 @@ public class Board {
     }
 
     public void MoveZombies( ) {
-
+        Dijkstra path;
+        Stack<int[]> ans;
+        int[] temp;
+        for( CommomZombie zombie : zombies ) {
+            path = new Dijkstra(player, zombie, board);
+            ans = path.CalculatePath();
+            for( int movement = zombie.getMovement() ; movement != 0 ; movement-- ) {
+                if( ans.empty() ) {
+                    break;
+                }
+                temp = ans.peek().clone();
+                if( board[temp[0]][temp[1]] == player ) {
+                    InitiateCombat( zombie.getPosition().clone() , true);
+                    break;
+                } else {
+                    MoveZombie( zombie.getPosition().clone() , temp , zombie);
+                }
+                ans.pop();
+            }
+        }
     }
+
+    public void MoveZombie( int[] source , int[] destiny , CommomZombie zombie ) {
+        zombie.setPosition( destiny.clone() );
+        board[destiny[0]][destiny[1]] = zombie;
+        eventListener.Redraw( destiny.clone() , board[destiny[0]][destiny[1]] );
+        board[source[0]][source[1]] = new Ground();
+        eventListener.Redraw( source.clone() , board[source[0]][source[1]] );
+    }
+
 
     public void FinishCombat( CommomZombie zombie ) {
         eventListener.FinishCombat();
@@ -203,6 +232,7 @@ public class Board {
     }
 
     public void KillZombie( CommomZombie zombie ) {
+        toRemoveZombie.add(zombie);
         int[] position = zombie.getPosition().clone();
         board[position[0]][position[1]] = new Ground();
         board[position[0]][position[1]].setPosition( position );

@@ -31,7 +31,6 @@ public class FileReader {
         String[][] map = new String[10][10];
         int x = 0;
         try {
-            //( rand.nextInt(3) + 1 )
             File myObj = new File( "maps/map" + ( rand.nextInt(3) + 1 ) + ".csv" );
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
