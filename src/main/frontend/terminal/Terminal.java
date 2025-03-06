@@ -5,17 +5,17 @@ import java.util.Scanner;
 import main.board.characters.CommomZombie;
 import main.board.characters.Player;
 import main.board.combat.Combat;
+import main.frontend.BaseFrontend;
 import main.EventListener;
 import main.board.baseclasses.Grid;
 
-public class Terminal {
-    private Grid board[][];;
-    private EventListener eventListener;
+public class Terminal extends BaseFrontend{
+    private Grid board[][];
     private Scanner reader = new Scanner( System.in ); 
     private boolean combatBool = false;
 
     public Terminal( EventListener eventListener ) {
-        this.eventListener = eventListener;
+        super(eventListener);
         board = new Grid[10][10];
         int[] position = new int[2];
         for( int x = 0 ; x < 10 ; x++ ) {

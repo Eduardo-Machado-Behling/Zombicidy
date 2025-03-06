@@ -74,7 +74,6 @@ public class EventListener {
     }
 
     public void Redraw( int[] position , Grid grid ) {
-
         terminal.Redraw( position , grid );
     }
 
@@ -88,5 +87,9 @@ public class EventListener {
 
     public void PlayerNoGun() {
         terminal.PlayerNoGun();
+    }
+
+    public void RestartBoard() {
+        board.StartBoard();
     }
 }

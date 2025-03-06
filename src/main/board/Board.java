@@ -16,12 +16,21 @@ public class Board {
     private ArrayList<CommomZombie> toRemoveZombie = new ArrayList<CommomZombie>();
     private Map<String, String[]> gameSettings;
     private EventListener eventListener;
+    private String[][] map;
 
     public Board( String difficulty , boolean load , EventListener eventListener ) {
         this.eventListener = eventListener;
         FileReader fileReader = new FileReader();
-        String[][] map = fileReader.ReadRamdomMap();
+        map = fileReader.ReadRamdomMap();
         gameSettings = fileReader.ReadSettings( difficulty );
+        StartBoard();
+    }
+
+    public Grid GetGrid( int[] position ) {
+        return board[position[0]][position[1]];
+    }
+
+    public void StartBoard() {
         int[] position = new int[2];
         for( int x = 0 ; x < 10 ; x++ ) {
             for( int y = 0 ; y < 10 ; y++ ) {
@@ -56,12 +65,7 @@ public class Board {
                 position[1] = y;
                 board[x][y].setPosition( position );
             }  
-            
         } 
-    }
-
-    public Grid GetGrid( int[] position ) {
-        return board[position[0]][position[1]];
     }
 
     public Chest CreateChest( String type ) {

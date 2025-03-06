@@ -72,12 +72,23 @@ public class Dijkstra {
             if( pathMap[position[0]][position[1]].distance == distance - 1 ) {
                 return true;
             } 
-        } 
+        }   
         return false;
     }
 
     public Stack<int[]> CalculatePath() {
         CalculateDistance( start );
+        /*for( int x = 0 ; x < 10 ; x++ ) {
+            for( int y = 0 ; y < 10 ; y++ ) {
+                if ( pathMap[x][y] == null ) {
+                    System.out.print(" -10 |");
+                } else {
+                    System.out.print( " " + pathMap[x][y].distance + " |" );
+                }
+            }
+            System.out.print( "\n" );    
+        }
+        System.out.print( "\n" );*/
         FindPath( end.clone() );
         path.pop();
         return path;
