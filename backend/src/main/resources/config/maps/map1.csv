@@ -1,0 +1,10 @@
+Player,Wall,Ground,ChestBandage,Ground,Ground,Ground,CommomZombie,Ground,Ground
+Ground,Wall,Ground,Wall,CrawlerZombie,Ground,Ground,Ground,Ground,Ground
+Ground,Wall,Ground,Wall,Ground,Ground,Wall,Wall,Ground,CommomZombie
+Ground,Wall,Ground,Wall,Ground,Ground,Wall,Wall,Ground,Ground
+Ground,Ground,ChestBeisebolBat,Wall,Ground,RunnerZombie,Wall,Wall,Ground,Ground
+Ground,Wall,Wall,Wall,Ground,Ground,Wall,Wall,RunnerZombie,Ground
+CommomZombie,Wall,Ground,Ground,Ground,CommomZombie,Wall,Wall,Ground,Ground
+Ground,Wall,Ground,CrawlerZombie,Ground,ChestGun,Ground,Ground,Ground,Ground
+Ground,Wall,Wall,Wall,Wall,Wall,Ground,Ground,Wall,Ground
+ChestGun,Ground,Ground,CommomZombie,Ground,Ground,Ground,Ground,Wall,GiantZombie
