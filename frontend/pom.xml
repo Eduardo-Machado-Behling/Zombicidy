@@ -33,6 +33,12 @@
             <version>3.3.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-stb</artifactId>
+            <version>3.3.2</version>
+        </dependency>
+
         <!-- LWJGL Native Libraries (Ensure your OS is correct) -->
         <dependency>
             <groupId>org.lwjgl</groupId>
@@ -51,6 +57,13 @@
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-glfw</artifactId>
+            <version>3.3.2</version>
+            <classifier>natives-windows</classifier>            <!-- Change to `natives-linux` or `natives-macos` -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-stb</artifactId>
             <version>3.3.2</version>
             <classifier>natives-windows</classifier>            <!-- Change to `natives-linux` or `natives-macos` -->
         </dependency>
