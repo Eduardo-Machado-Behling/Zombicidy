@@ -2,6 +2,8 @@ package com.zombicidy.frontend.engine.components;
 
 import com.zombicidy.frontend.engine.math.Vector2D;
 import com.zombicidy.frontend.engine.math.Vector3D;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
@@ -54,35 +56,38 @@ public class Mesh {
     GL40.glBindBuffer(GL40.GL_ARRAY_BUFFER, vbo);
     GL40.glBindVertexArray(vao);
 
-    for (Vertex v : vertexs) {
-      System.out.println(v);
-    }
+    FloatBuffer buffer;
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      FloatBuffer buffer =
-          stack.mallocFloat(vertexs.length * Vertex.SizeBytes());
-
-      for (Vertex vertex : vertexs) {
-        buffer.put(vertex.getData());
-      }
-
-      buffer.flip();
-      GL40.glBufferData(GL40.GL_ARRAY_BUFFER, buffer, GL40.GL_STATIC_DRAW);
-
-      // Set up vertex attributes
-      GL40.glEnableVertexAttribArray(0);
-      GL40.glVertexAttribPointer(0, 3, GL40.GL_FLOAT, false, Vertex.SizeBytes(),
-                                 0); // Position
-
-      GL40.glEnableVertexAttribArray(1);
-      GL40.glVertexAttribPointer(1, 2, GL40.GL_FLOAT, false, Vertex.SizeBytes(),
-                                 Vector3D.SizeBytes()); // UV
-
-      GL40.glEnableVertexAttribArray(2);
-      GL40.glVertexAttribPointer(2, 3, GL40.GL_FLOAT, false, Vertex.SizeBytes(),
-                                 Vector3D.SizeBytes() +
-                                     Vector2D.SizeBytes()); // Normal
+      buffer = stack.mallocFloat(vertexs.length * Vertex.SizeBytes());
+    } catch (java.lang.OutOfMemoryError e) {
+      buffer =
+          ByteBuffer
+              .allocateDirect(vertexs.length * Vertex.SizeBytes() * Float.BYTES)
+              .order(ByteOrder.nativeOrder())
+              .asFloatBuffer();
     }
+
+    for (Vertex vertex : vertexs) {
+      buffer.put(vertex.getData());
+    }
+
+    buffer.flip();
+    GL40.glBufferData(GL40.GL_ARRAY_BUFFER, buffer, GL40.GL_STATIC_DRAW);
+
+    // Set up vertex attributes
+    GL40.glEnableVertexAttribArray(0);
+    GL40.glVertexAttribPointer(0, 3, GL40.GL_FLOAT, false, Vertex.SizeBytes(),
+                               0); // Position
+
+    GL40.glEnableVertexAttribArray(1);
+    GL40.glVertexAttribPointer(1, 2, GL40.GL_FLOAT, false, Vertex.SizeBytes(),
+                               Vector3D.SizeBytes()); // UV
+
+    GL40.glEnableVertexAttribArray(2);
+    GL40.glVertexAttribPointer(2, 3, GL40.GL_FLOAT, false, Vertex.SizeBytes(),
+                               Vector3D.SizeBytes() +
+                                   Vector2D.SizeBytes()); // Normal
 
     GL40.glBindBuffer(GL40.GL_ARRAY_BUFFER, 0);
   }

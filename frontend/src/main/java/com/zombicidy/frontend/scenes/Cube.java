@@ -22,7 +22,7 @@ public class Cube implements IScene {
   private Vector3D rot = new Vector3D(0.3f, 0, 0);
 
   public Cube() {
-    Vertex[] vertices = loadOBJ("assets/models/untitled.obj");
+    Vertex[] vertices = loadOBJ("assets/models/monkey.obj");
 
     // Vertex[] vertices = new Vertex[] {
     //     new Vertex(new Vector3D(-0.5f, 0.0f, 1.5f), new Vector2D(0.0f, 0.0f),
@@ -39,7 +39,7 @@ public class Cube implements IScene {
     Engine.get().setCamera(
         Camera.Perspective(60, Window.get().getAspectRatio(), 0.1f, 10.0f)
             .lookAt(new Vector3D(0, 0, -3), new Vector3D(0, 0, 3),
-                    new Vector3D(0, 1, 0)));
+                    new Vector3D(0, -1, 0)));
   }
 
   @Override
