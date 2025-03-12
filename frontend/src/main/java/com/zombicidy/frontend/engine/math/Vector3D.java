@@ -1,7 +1,21 @@
 package com.zombicidy.frontend.engine.math;
 
+import java.nio.FloatBuffer;
+
 public class Vector3D {
   public float x, y, z;
+
+  public Vector3D() {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+  }
+
+  public Vector3D(float f) {
+    this.x = f;
+    this.y = f;
+    this.z = f;
+  }
 
   public Vector3D(float x, float y, float z) {
     this.x = x;
@@ -54,10 +68,31 @@ public class Vector3D {
 
   public Vector3D normalize() {
     float mag = magnitude();
+
+    if (mag == 0)
+      return this;
+
     return this.divide(mag);
   }
 
   public float dot(Vector3D other) {
     return this.x * other.x + this.y * other.y + this.z * other.z;
+  }
+
+  public FloatBuffer toFloatBuffer(FloatBuffer buffer) {
+    buffer.put(x);
+    buffer.put(y);
+    buffer.put(z);
+    buffer.flip();
+
+    return buffer;
+  }
+
+  public Vector3D max(float i) {
+    return new Vector3D(Math.max(x, i), Math.max(y, i), Math.max(z, i));
+  }
+
+  public Vector3D min(float i) {
+    return new Vector3D(Math.min(x, i), Math.min(y, i), Math.min(z, i));
   }
 }

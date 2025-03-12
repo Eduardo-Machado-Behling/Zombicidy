@@ -23,13 +23,7 @@ public class Camera {
                                    float farZ) {
     Camera camera = new Camera();
 
-    float tan = (float)Math.tan(Math.toRadians(fov / 2.0f));
-    camera.projection.set(0, 0, 1 / (tan * aspectRatio))
-        .set(1, 1, 1 / tan)
-        .set(2, 2, -(farZ + nearZ) / (farZ - nearZ))
-        .set(2, 3, -1.0f)
-        .set(3, 2, -(2 * farZ * nearZ) / (farZ - nearZ))
-        .set(3, 3, 0.0f);
+    camera.projection = SquareMatrix.Perspective(fov, aspectRatio, nearZ, farZ);
 
     return camera;
   }
@@ -43,28 +37,52 @@ public class Camera {
     return this;
   }
 
-  private void updateViewMatrix() { lookAt(position, front, up); }
+  private void updateViewMatrix() {
+    this.view = SquareMatrix.lookAt(position, front.add(position), up);
+  }
 
   public Camera move(Vector3D direction, float amount) {
-    position.add(direction.mult(amount));
+    position = position.add(direction.mult(amount));
     updateViewMatrix(); // Recalculate the view matrix
     return this;
   }
 
   public Camera rotate(float yaw, float pitch) {
-    front.x = (float)Math.cos(Math.toRadians(yaw)) *
-              (float)Math.cos(Math.toRadians(pitch));
-    front.y = (float)Math.sin(Math.toRadians(pitch));
-    front.z = (float)Math.sin(Math.toRadians(yaw)) *
-              (float)Math.cos(Math.toRadians(pitch));
+    // Convert yaw and pitch to radians
+    float yawRad = (float)Math.toRadians(yaw);
+    float pitchRad = (float)Math.toRadians(pitch);
 
-    front.normalize();
+    // Create a rotation matrix (yaw rotation around Y, pitch rotation around X)
+    float cosPitch = (float)Math.cos(pitchRad);
+    float sinPitch = (float)Math.sin(pitchRad);
+    float cosYaw = (float)Math.cos(yawRad);
+    float sinYaw = (float)Math.sin(yawRad);
+
+    // Compute the rotated front vector
+    Vector3D newFront = new Vector3D(cosYaw * cosPitch, // X
+                                     sinPitch,          // Y
+                                     sinYaw * cosPitch  // Z
+                                     )
+                            .normalize();
+
+    // Combine the new rotation with the existing front
+    front = newFront;
+
     updateViewMatrix();
-
     return this;
   }
 
   public SquareMatrix getProjectionMatrix() { return projection; }
 
   public SquareMatrix getViewMatrix() { return view; }
+
+  public void setProjection(SquareMatrix projection) {
+    this.projection = projection;
+  }
+
+  public void setView(SquareMatrix view) { this.view = view; }
+
+  public Vector3D getFront() { return front; }
+
+  public Vector3D getUp() { return up; }
 }

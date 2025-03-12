@@ -9,5 +9,8 @@ public interface IScene {
 
   abstract void onMouseEvent(long window, int button, int action, int mods);
 
+  abstract void onResize(long window, int width, int height);
+  abstract void onMouseMove(long window, double xpos, double ypos);
+
   abstract void clean();
 }

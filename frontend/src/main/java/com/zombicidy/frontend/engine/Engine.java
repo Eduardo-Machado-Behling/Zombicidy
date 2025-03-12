@@ -1,6 +1,7 @@
 package com.zombicidy.frontend.engine;
 
 import com.zombicidy.frontend.ShaderManager;
+import com.zombicidy.frontend.engine.components.Component;
 import com.zombicidy.frontend.engine.components.Mesh;
 import com.zombicidy.frontend.engine.components.Shader;
 import com.zombicidy.frontend.engine.components.Transform;
@@ -13,7 +14,7 @@ public class Engine {
   public class GameObject {
     private Mesh mesh;
     private Shader shader;
-    private Transform transform;
+    private final HashMap<String, Component> components = new HashMap<>();
 
     public Mesh getMesh() { return mesh; }
 
@@ -23,11 +24,12 @@ public class Engine {
 
     public void setShader(Shader shader) { this.shader = shader; }
 
-    public Transform getTransform() { return transform; }
-
-    public void setTransform(Transform transform) {
-      this.transform = transform;
+    public void addComponent(String name, Component c) {
+      components.put(name, c);
     }
+    public void rmvComponent(String name) { components.remove(name); }
+
+    public HashMap<String, Component> getComponent() { return components; }
   }
 
   final private HashMap<Shader, HashMap<Mesh, ArrayList<GameObject>>>
@@ -46,32 +48,34 @@ public class Engine {
   }
 
   public void setCamera(Camera camera) { this.camera = camera; }
+  public Camera getCamera() { return this.camera; }
 
   public void render() {
     for (Entry<Shader, HashMap<Mesh, ArrayList<GameObject>>> entry :
          gameObjects.entrySet()) {
 
-      ShaderManager.get().useProgram(entry.getKey().getProgram());
+      entry.getKey().bind();
 
-      GL40.glUniformMatrix4fv(
-          ShaderManager.get().getUniformLocation("m_projection"), false,
-          camera.getProjectionMatrix().toFloatBuffer());
-
-      GL40.glUniformMatrix4fv(ShaderManager.get().getUniformLocation("m_view"),
-                              false, camera.getViewMatrix().toFloatBuffer());
+      ShaderManager.get().setUniform("m_projection",
+                                     camera.getProjectionMatrix());
+      ShaderManager.get().setUniform("m_view", camera.getViewMatrix());
 
       for (Entry<Mesh, ArrayList<GameObject>> en :
            entry.getValue().entrySet()) {
 
-        GL40.glBindVertexArray(
-            en.getKey().getVAO()); // Ensure the VAO is bound here
+        en.getKey().bind();
 
         for (GameObject go : en.getValue()) {
-          GL40.glUniformMatrix4fv(
-              ShaderManager.get().getUniformLocation("m_model"), false,
-              go.transform.getMatrix().toFloatBuffer());
+
+          for (Component elem : go.getComponent().values()) {
+            elem.bind();
+          }
 
           GL40.glDrawArrays(GL40.GL_TRIANGLES, 0, go.getMesh().verticeAmount());
+
+          for (Component elem : go.getComponent().values()) {
+            elem.unbind();
+          }
         }
       }
     }
@@ -90,7 +94,7 @@ public class Engine {
     GameObject go = new GameObject();
     go.setMesh(mesh);
     go.setShader(shader);
-    go.setTransform(transform);
+    go.addComponent("transform", transform);
 
     if (!gameObjects.containsKey(shader))
       gameObjects.put(shader, new HashMap<>());

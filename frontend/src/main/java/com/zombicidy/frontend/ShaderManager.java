@@ -1,13 +1,19 @@
 package com.zombicidy.frontend;
 
+import com.zombicidy.frontend.engine.math.SquareMatrix;
+import com.zombicidy.frontend.engine.math.Vector3D;
+import java.nio.FloatBuffer;
 import java.util.HashMap;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL40;
+
 
 public class ShaderManager {
   static private ShaderManager instance = null;
 
   private final HashMap<String, Integer> programs = new HashMap<>();
   private int currentProgram = -1;
+  private final FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
 
   private ShaderManager() {}
 
@@ -36,6 +42,21 @@ public class ShaderManager {
 
   public int getUniformLocation(String name) {
     return GL40.glGetUniformLocation(currentProgram, name);
+  }
+
+  public void setUniform(String name, SquareMatrix matrix) {
+    buffer.clear();
+    GL40.glUniformMatrix4fv(getUniformLocation(name), false,
+                            matrix.toFloatBuffer(buffer));
+  }
+
+  public void setUniform(String name, float val) {
+    GL40.glUniform1f(getUniformLocation(name), val);
+  }
+
+  public void setUniform(String name, Vector3D vec3) {
+    buffer.clear();
+    GL40.glUniform4fv(getUniformLocation(name), vec3.toFloatBuffer(buffer));
   }
 
   private enum ShaderType {

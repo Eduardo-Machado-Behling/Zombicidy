@@ -1,5 +1,6 @@
 package com.zombicidy.frontend;
 
+import com.zombicidy.frontend.engine.components.Texture;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -8,24 +9,11 @@ import java.util.HashMap;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
+
 public class AssetManager {
-  public class Texture {
-    public int width;
-    public int height;
-    public int channels;
-    public ByteBuffer data;
-
-    public Texture(int width, int height, int channels, ByteBuffer data) {
-      this.width = width;
-      this.height = height;
-      this.channels = channels;
-      this.data = data;
-    }
-  };
-
   static private AssetManager instance = null;
 
-  private HashMap<String, Texture> textures = new HashMap<>();
+  private HashMap<String, Texture.TextureData> textures = new HashMap<>();
 
   private AssetManager() {}
 
@@ -37,7 +25,7 @@ public class AssetManager {
     return instance;
   }
 
-  public Texture getTexture(String name) {
+  public Texture.TextureData getTexture(String name) {
     if (!textures.containsKey(name)) {
       loadTexture(name);
     }
@@ -69,8 +57,8 @@ public class AssetManager {
         throw new RuntimeException("Failed to load image: " + filePath);
       }
 
-      textures.put(name, new Texture(width.get(0), height.get(0),
-                                     channels.get(0), image));
+      textures.put(name, new Texture.TextureData(width.get(0), height.get(0),
+                                                 channels.get(0), image));
     } catch (IOException e) {
       e.printStackTrace();
       throw new RuntimeException("Failed to load texture.");

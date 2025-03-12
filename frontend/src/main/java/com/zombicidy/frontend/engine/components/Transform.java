@@ -1,9 +1,10 @@
 package com.zombicidy.frontend.engine.components;
 
+import com.zombicidy.frontend.ShaderManager;
 import com.zombicidy.frontend.engine.math.SquareMatrix;
 import com.zombicidy.frontend.engine.math.Vector3D;
 
-public class Transform {
+public class Transform implements Component {
   private SquareMatrix matrix;
 
   public Transform() { matrix = SquareMatrix.identity(4); }
@@ -17,4 +18,15 @@ public class Transform {
 
   public SquareMatrix getMatrix() { return matrix; }
   public void setMatrix(SquareMatrix matrix) { this.matrix = matrix; }
+
+  @Override
+  public void bind() {
+    ShaderManager.get().setUniform("m_model", matrix);
+  }
+
+  @Override
+  public void clean() {}
+
+  @Override
+  public void unbind() {}
 }

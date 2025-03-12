@@ -4,26 +4,30 @@ import com.zombicidy.frontend.engine.math.Vector2D;
 import com.zombicidy.frontend.engine.math.Vector3D;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.util.List;
 import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
 
 
-public class Mesh {
+public class Mesh implements Component {
   final private int vbo;
   final private int vao;
   final private int vertexAmount;
 
   public static class Vertex {
-    public Vector3D vertices;
-    public Vector2D uv;
-    public Vector3D normal;
-    public float[] data;
+    public final Vector3D vertices;
+    public final Vector2D uv;
+    public final Vector3D normal;
+    public final int materialId;
 
-    public Vertex(Vector3D vertices, Vector2D uv, Vector3D normal) {
+    public final float[] data;
+
+    public Vertex(Vector3D vertices, Vector2D uv, Vector3D normal,
+                  int materialId) {
       this.vertices = vertices;
       this.uv = uv;
       this.normal = normal;
+      this.materialId = materialId;
       this.data = new float[8];
 
       this.data[0] = vertices.x;
@@ -43,33 +47,35 @@ public class Mesh {
     }
 
     static public int SizeBytes() {
-      return Vector3D.SizeBytes() + Vector2D.SizeBytes() + Vector3D.SizeBytes();
+      return Vector3D.SizeBytes() + Vector2D.SizeBytes() +
+          Vector3D.SizeBytes() + Integer.BYTES;
     }
 
     public float[] getData() { return data; }
   }
 
-  public Mesh(Vertex[] vertexs) {
+  public Mesh(List<Vertex> vertexs) {
     vbo = GL40.glGenBuffers();
     vao = GL40.glGenVertexArrays();
-    vertexAmount = vertexs.length;
-    GL40.glBindBuffer(GL40.GL_ARRAY_BUFFER, vbo);
-    GL40.glBindVertexArray(vao);
+    vertexAmount = vertexs.size();
 
-    FloatBuffer buffer;
+    GL40.glBindVertexArray(vao);
+    GL40.glBindBuffer(GL40.GL_ARRAY_BUFFER, vbo);
+
+    ByteBuffer buffer;
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      buffer = stack.mallocFloat(vertexs.length * Vertex.SizeBytes());
+      buffer = stack.malloc(vertexs.size() * Vertex.SizeBytes());
     } catch (java.lang.OutOfMemoryError e) {
-      buffer =
-          ByteBuffer
-              .allocateDirect(vertexs.length * Vertex.SizeBytes() * Float.BYTES)
-              .order(ByteOrder.nativeOrder())
-              .asFloatBuffer();
+      buffer = ByteBuffer.allocateDirect(vertexs.size() * Vertex.SizeBytes())
+                   .order(ByteOrder.nativeOrder());
     }
 
     for (Vertex vertex : vertexs) {
-      buffer.put(vertex.getData());
+      for (Float elem : vertex.getData()) {
+        buffer.putFloat(elem);
+      }
+      buffer.putInt(vertex.materialId);
     }
 
     buffer.flip();
@@ -89,11 +95,29 @@ public class Mesh {
                                Vector3D.SizeBytes() +
                                    Vector2D.SizeBytes()); // Normal
 
+    GL40.glEnableVertexAttribArray(3);
+    GL40.glVertexAttribPointer(3, 1, GL40.GL_INT, false, Vertex.SizeBytes(),
+                               Vector3D.SizeBytes() * 2 +
+                                   Vector2D.SizeBytes()); // MaterialId
+
     GL40.glBindBuffer(GL40.GL_ARRAY_BUFFER, 0);
   }
 
-  public int getVBO() { return vbo; }
-  public int getVAO() { return vao; }
-
   public int verticeAmount() { return vertexAmount; }
+
+  @Override
+  public void bind() {
+    GL40.glBindVertexArray(vbo); // Ensure the VAO is bound here
+  }
+
+  @Override
+  public void clean() {
+    GL40.glDeleteBuffers(vbo);
+    GL40.glDeleteVertexArrays(vao);
+  }
+
+  @Override
+  public void unbind() {
+    GL40.glBindVertexArray(0); // Ensure the VAO is bound here
+  }
 }

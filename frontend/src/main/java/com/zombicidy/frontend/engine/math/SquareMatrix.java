@@ -129,6 +129,18 @@ public class SquareMatrix {
         .set(3, 3, 1.0f);
   }
 
+  public static SquareMatrix Perspective(float fov, float aspectRatio,
+                                         float nearZ, float farZ) {
+    float tan = (float)Math.tan(Math.toRadians(fov / 2.0f));
+    return SquareMatrix.identity(4)
+        .set(0, 0, 1 / (tan * aspectRatio))
+        .set(1, 1, 1 / tan)
+        .set(2, 2, -(farZ + nearZ) / (farZ - nearZ))
+        .set(2, 3, -1.0f)
+        .set(3, 2, -(2 * farZ * nearZ) / (farZ - nearZ))
+        .set(3, 3, 0.0f);
+  }
+
   public static SquareMatrix scale(Vector3D vector) {
     return SquareMatrix.identity(4)
         .set(0, 0, vector.x)

@@ -3,7 +3,8 @@ package com.zombicidy.frontend;
 import com.zombicidy.frontend.scenes.IScene;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL40;
+
 
 public class Window {
   static private Window rendererInstance = null;
@@ -32,10 +33,8 @@ public class Window {
 
     GLFW.glfwSetKeyCallback(window, this::onKeyEvent);
     GLFW.glfwSetMouseButtonCallback(window, this::onMouseEvent);
-    GLFW.glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
-      this.width = width;
-      this.height = height;
-    });
+    GLFW.glfwSetCursorPosCallback(window, this::onMouseMove);
+    GLFW.glfwSetFramebufferSizeCallback(window, this::onResize);
   }
 
   static public Window get() {
@@ -46,6 +45,14 @@ public class Window {
     return rendererInstance;
   }
 
+  private void onResize(long window, int width, int height) {
+    this.width = width;
+    this.height = height;
+
+    GL40.glViewport(0, 0, width, height);
+
+    scene.onResize(window, width, height);
+  }
   private void onKeyEvent(long window, int key, int scancode, int action,
                           int mods) {
     if (action == GLFW.GLFW_PRESS) {
@@ -69,7 +76,7 @@ public class Window {
 
   public void run() {
     while (!GLFW.glfwWindowShouldClose(window)) {
-      GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+      GL40.glClear(GL40.GL_COLOR_BUFFER_BIT | GL40.GL_DEPTH_BUFFER_BIT);
 
       curr_time = GLFW.glfwGetTime();
       double elapsed_time = curr_time - last_time;
@@ -92,4 +99,12 @@ public class Window {
   }
 
   public float getAspectRatio() { return (float)width / (float)height; }
+
+  private void onMouseMove(long window, double xpos, double ypos) {
+    scene.onMouseMove(window, xpos, ypos);
+  }
+
+  public int height() { return height; }
+
+  public int width() { return width; }
 }
