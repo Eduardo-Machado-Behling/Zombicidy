@@ -5,6 +5,8 @@ import com.zombicidy.frontend.WavefrontLoader;
 import com.zombicidy.frontend.Window;
 import com.zombicidy.frontend.engine.Camera;
 import com.zombicidy.frontend.engine.Engine;
+import com.zombicidy.frontend.engine.components.Color;
+import com.zombicidy.frontend.engine.components.Material;
 import com.zombicidy.frontend.engine.components.Texture;
 import com.zombicidy.frontend.engine.components.Transform;
 import com.zombicidy.frontend.engine.math.SquareMatrix;
@@ -13,10 +15,9 @@ import com.zombicidy.frontend.engine.math.Vector3D;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL30;
 
-
 public class Cube implements IScene {
-  private Engine.GameObject go;
-  private final Vector3D rot = new Vector3D(0.3f, 180, 180);
+  private final Engine.GameObject[] go = new Engine.GameObject[50];
+  private final Vector3D rot = new Vector3D(0, 0, 180);
   private final Camera camera;
   private Vector3D cameraVel = new Vector3D();
   private final Vector2D cameraRot = new Vector2D(90, 0);
@@ -40,17 +41,35 @@ public class Cube implements IScene {
     // };
 
     WavefrontLoader.WavefrontData data =
-        WavefrontLoader.loadOBJ("assets/models/monkey.obj");
+        WavefrontLoader.loadOBJ("assets/models/untitled.obj");
 
-    go = Engine.get().makeGameObject(data.mesh);
-    go.addComponent("texture", new Texture(AssetManager.get().getTexture("foo"),
-                                           new Texture.TextureParam()));
+    go[0] = Engine.get().makeGameObject(data.mesh);
+    go[0].addComponent("material", new Material(data.materials));
+    go[0].addComponent("texture",
+                       new Texture(AssetManager.get().getTexture("foo"),
+                                   new Texture.TextureParam()));
+    go[0].addComponent("color",
+                       new Color(new Vector3D(1.0f, 0.2f, 0.5f), 0.0f));
     // Engine.get().setCamera(new Camera());
+
+    go[1] = Engine.get().makeGameObject(data.mesh);
+    go[1].addComponent("material", new Material(data.materials));
+    go[1].addComponent("color",
+                       new Color(new Vector3D(1.0f, 0.2f, 0.5f), 1.0f));
+    Transform t = (Transform)go[1].getComponent().get("transform");
+    t.setTranslation(new Vector3D(0, -0.5f, -1));
+    t.setScale(new Vector3D(0.1f));
+
     camera =
         Camera.Perspective(fov, Window.get().getAspectRatio(), 0.1f, 10.0f)
             .lookAt(new Vector3D(0, 0, -3), new Vector3D(0, 0, 3).normalize(),
                     new Vector3D(0, -1, 0).normalize());
     Engine.get().setCamera(camera);
+
+    t = (Transform)go[0].getComponent().get("transform");
+    t.setTranslation(new Vector3D(0, 0, 3));
+    System.out.println("trans");
+    t.getMatrix().print();
   }
 
   @Override
@@ -65,15 +84,20 @@ public class Cube implements IScene {
     GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
 
     // rot.y += elapsed_time;
-    // rot.z += 2 * elapsed_time;
+    // rot.z += 45 * elapsed_time;
     // rot.x += elapsed_time / 4;
 
-    Transform t = (Transform)go.getComponent().get("transform");
-    t.setMatrix(SquareMatrix.rotation(rot));
+    // Transform t = (Transform)go[0].getComponent().get("transform");
+    // t.setRotation(rot);
 
-    camera.move(cameraVel, (float)elapsed_time * 2.5f);
+    if (!cameraVel.all(0.0f)) {
+      camera.move(cameraVel, (float)elapsed_time * 2.5f);
+      System.out.println("Position: " + camera.getPosition());
+    }
 
-    Engine.get().render();
+    Engine.get().render(
+        (float)elapsed_time,
+        ((Transform)go[1].getComponent().get("transform")).getTranslation());
   }
 
   @Override

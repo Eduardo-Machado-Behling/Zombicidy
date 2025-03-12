@@ -6,18 +6,28 @@ import com.zombicidy.frontend.engine.math.Vector3D;
 
 public class Transform implements Component {
   private SquareMatrix matrix;
+  private Vector3D translation = new Vector3D();
+  private Vector3D rotation = new Vector3D();
+  private Vector3D scale = new Vector3D(1);
+
+  public Transform(Vector3D translation, Vector3D scale, Vector3D rotation) {
+    this.translation = translation;
+    this.scale = scale;
+    this.rotation = rotation;
+    genMatrix();
+  }
 
   public Transform() { matrix = SquareMatrix.identity(4); }
 
-  public Transform(Vector3D translation, Vector3D scale, Vector3D rotation) {
-    matrix = SquareMatrix
-                 .translation(translation) // ✅ Apply translation last
-                 .multiply(SquareMatrix.rotation(rotation)) // ✅ Rotate second
-                 .multiply(SquareMatrix.scale(scale)); // ✅ Apply scale first
+  private void genMatrix() {
+    matrix =
+        SquareMatrix
+            .scale(scale)                              // ✅ translation last
+            .multiply(SquareMatrix.rotation(rotation)) // ✅ Rotate second
+            .multiply(SquareMatrix.translation(translation)); // ✅  scale first
   }
 
   public SquareMatrix getMatrix() { return matrix; }
-  public void setMatrix(SquareMatrix matrix) { this.matrix = matrix; }
 
   @Override
   public void bind() {
@@ -29,4 +39,25 @@ public class Transform implements Component {
 
   @Override
   public void unbind() {}
+
+  public Vector3D getTranslation() { return translation; }
+
+  public void setTranslation(Vector3D translation) {
+    this.translation = translation;
+    genMatrix();
+  }
+
+  public Vector3D getRotation() { return rotation; }
+
+  public void setRotation(Vector3D rotation) {
+    this.rotation = rotation;
+    genMatrix();
+  }
+
+  public Vector3D getScale() { return scale; }
+
+  public void setScale(Vector3D scale) {
+    this.scale = scale;
+    genMatrix();
+  }
 }

@@ -5,6 +5,7 @@ import com.zombicidy.frontend.engine.components.Component;
 import com.zombicidy.frontend.engine.components.Mesh;
 import com.zombicidy.frontend.engine.components.Shader;
 import com.zombicidy.frontend.engine.components.Transform;
+import com.zombicidy.frontend.engine.math.Vector3D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -50,11 +51,20 @@ public class Engine {
   public void setCamera(Camera camera) { this.camera = camera; }
   public Camera getCamera() { return this.camera; }
 
-  public void render() {
+  public void render(float elapsed_time, Vector3D lightPos) {
     for (Entry<Shader, HashMap<Mesh, ArrayList<GameObject>>> entry :
          gameObjects.entrySet()) {
 
       entry.getKey().bind();
+
+      ShaderManager.get().setUniform("lightPos", lightPos);
+      ShaderManager.get().setUniform("light.ambient",
+                                     new Vector3D(0.4f, 0.4f, 0.4f));
+      ShaderManager.get().setUniform(
+          "light.diffuse",
+          new Vector3D(0.8f, 0.8f, 0.6f)); // darken diffuse light a bit
+      ShaderManager.get().setUniform("light.specular",
+                                     new Vector3D(1.0f, 1.0f, 1.0f));
 
       ShaderManager.get().setUniform("m_projection",
                                      camera.getProjectionMatrix());

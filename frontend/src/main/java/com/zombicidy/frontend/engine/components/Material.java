@@ -2,6 +2,8 @@ package com.zombicidy.frontend.engine.components;
 
 import com.zombicidy.frontend.ShaderManager;
 import com.zombicidy.frontend.engine.math.Vector3D;
+import java.util.List;
+
 
 public class Material implements Component {
 
@@ -16,10 +18,13 @@ public class Material implements Component {
     public Vector3D ambient;
     public Vector3D diffuse;
     public Vector3D specular;
+
     public float shininess;
     public float transparency;
     public float specularExp;
+
     public IllumType illum;
+
     public Texture.TextureData diffuseMap = null;
     public Texture.TextureData normalMap = null;
 
@@ -32,18 +37,19 @@ public class Material implements Component {
     }
   }
 
-  private MaterialData[] materials = new MaterialData[10];
+  private final MaterialData[] materials = new MaterialData[10];
   private int materialAmount = 0;
 
   // TODO: add support for texts
   final private int[] texts = new int[2];
 
-  public Material() {
-    // GL40.glGenTextures(texts);
-    ;
+  public Material(List<MaterialData> materials) {
+    for (MaterialData mat : materials) {
+      addMaterial(mat);
+    }
   }
 
-  public Material addMaterial(MaterialData md) {
+  public final Material addMaterial(MaterialData md) {
     if (materialAmount < materials.length)
       materials[materialAmount++] = md;
 
@@ -53,17 +59,16 @@ public class Material implements Component {
   @Override
   public void bind() {
     for (int i = 0; i < materialAmount; i++) {
-      ShaderManager.get().setUniform(String.format("materials[{}].ambient", i),
-                                     materials[i].ambient);
-      ShaderManager.get().setUniform(String.format("materials[{}].diffuse", i),
-                                     materials[i].diffuse);
-      ShaderManager.get().setUniform(String.format("materials[{}].specular", i),
-                                     materials[i].specular);
-      ShaderManager.get().setUniform(
-          String.format("materials[{}].shininess", i), materials[i].shininess);
-      ShaderManager.get().setUniform(
-          String.format("materials[{}].transparency", i),
-          materials[i].transparency);
+      String base = String.format("materials[%d]", i);
+      ShaderManager.get().setUniform(base + ".ambient", materials[i].ambient);
+      ShaderManager.get().setUniform(base + ".diffuse", materials[i].diffuse);
+      ShaderManager.get().setUniform(base + ".specular", materials[i].specular);
+      ShaderManager.get().setUniform(base + ".shininess",
+                                     materials[i].shininess);
+      ShaderManager.get().setUniform(base + ".transparency",
+                                     materials[i].transparency);
+      ShaderManager.get().setUniform(base + ".specularExp",
+                                     materials[i].specularExp);
     }
   }
 

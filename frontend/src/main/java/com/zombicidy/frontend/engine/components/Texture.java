@@ -1,8 +1,8 @@
 package com.zombicidy.frontend.engine.components;
 
+import com.zombicidy.frontend.ShaderManager;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL40;
-
 
 public class Texture implements Component {
   private final int textId;
@@ -28,7 +28,8 @@ public class Texture implements Component {
     public final int textureMaxFilter;
 
     public TextureParam(int textureWrapS, int textureWrapT,
-                        int textureMinFilter, int textureMaxFilter) {
+                        int textureMinFilter, int textureMaxFilter,
+                        float blendFactor) {
       this.textureWrapS = textureWrapS;
       this.textureWrapT = textureWrapT;
       this.textureMinFilter = textureMinFilter;
@@ -66,6 +67,7 @@ public class Texture implements Component {
   @Override
   public void bind() {
     GL40.glBindTexture(GL40.GL_TEXTURE_2D, textId);
+    ShaderManager.get().setUniform("blendFactor", 0);
   }
 
   @Override

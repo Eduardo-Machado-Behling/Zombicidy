@@ -95,4 +95,8 @@ public class Vector3D {
   public Vector3D min(float i) {
     return new Vector3D(Math.min(x, i), Math.min(y, i), Math.min(z, i));
   }
+
+  public boolean any(float f) { return x == f || y == f || z == f; }
+
+  public boolean all(float f) { return x == f && y == f && z == f; }
 }

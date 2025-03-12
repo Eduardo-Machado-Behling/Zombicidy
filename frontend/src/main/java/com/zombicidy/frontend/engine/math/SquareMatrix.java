@@ -53,6 +53,11 @@ public class SquareMatrix {
 
   // Matrix multiplication
   public SquareMatrix multiply(SquareMatrix other) {
+    System.out.println("A*B");
+    System.err.print("A = ");
+    print();
+    System.err.print("\nB = ");
+    print();
     SquareMatrix result = new SquareMatrix(size);
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
@@ -77,33 +82,37 @@ public class SquareMatrix {
     return transposed;
   }
 
-  public static SquareMatrix rotation(Vector3D vector) {
+  public static SquareMatrix rotation(Vector3D rotation) {
+    Vector3D rotRadians = new Vector3D((float)Math.toRadians(rotation.x),
+                                       (float)Math.toRadians(rotation.y),
+                                       (float)Math.toRadians(rotation.z));
+
     SquareMatrix Rz = SquareMatrix.identity(4)
-                          .set(0, 0, +(float)Math.cos(vector.z))
-                          .set(0, 1, -(float)Math.sin(vector.z))
-                          .set(1, 0, +(float)Math.sin(vector.z))
-                          .set(1, 1, +(float)Math.cos(vector.z));
+                          .set(0, 0, +(float)Math.cos(rotRadians.z))
+                          .set(0, 1, -(float)Math.sin(rotRadians.z))
+                          .set(1, 0, +(float)Math.sin(rotRadians.z))
+                          .set(1, 1, +(float)Math.cos(rotRadians.z));
 
     SquareMatrix Ry = SquareMatrix.identity(4)
-                          .set(0, 0, +(float)Math.cos(vector.y))
-                          .set(0, 2, +(float)Math.sin(vector.y))
-                          .set(2, 0, -(float)Math.sin(vector.y))
-                          .set(2, 2, +(float)Math.cos(vector.y));
+                          .set(0, 0, +(float)Math.cos(rotRadians.y))
+                          .set(0, 2, +(float)Math.sin(rotRadians.y))
+                          .set(2, 0, -(float)Math.sin(rotRadians.y))
+                          .set(2, 2, +(float)Math.cos(rotRadians.y));
 
     SquareMatrix Rx = SquareMatrix.identity(4)
-                          .set(1, 1, +(float)Math.cos(vector.x))
-                          .set(1, 2, -(float)Math.sin(vector.x))
-                          .set(2, 1, +(float)Math.sin(vector.x))
-                          .set(2, 2, +(float)Math.cos(vector.x));
+                          .set(1, 1, +(float)Math.cos(rotRadians.x))
+                          .set(1, 2, -(float)Math.sin(rotRadians.x))
+                          .set(2, 1, +(float)Math.sin(rotRadians.x))
+                          .set(2, 2, +(float)Math.cos(rotRadians.x));
 
     return Rz.multiply(Ry).multiply(Rx);
   }
 
   public static SquareMatrix translation(Vector3D vector) {
     return SquareMatrix.identity(4)
-        .set(0, 3, vector.x)
-        .set(1, 3, vector.y)
-        .set(2, 3, vector.z);
+        .set(3, 0, vector.x)
+        .set(3, 1, vector.y)
+        .set(3, 2, vector.z);
   }
 
   public static SquareMatrix lookAt(Vector3D eye, Vector3D center,
@@ -130,10 +139,14 @@ public class SquareMatrix {
 
   public static SquareMatrix Perspective(float fov, float aspectRatio,
                                          float nearZ, float farZ) {
+
     float tan = (float)Math.tan(Math.toRadians(fov / 2.0f));
+    float top = nearZ * tan;         // half height of near plane
+    float right = top * aspectRatio; // half width of near plane
+
     return SquareMatrix.identity(4)
-        .set(0, 0, 1 / (tan * aspectRatio))
-        .set(1, 1, 1 / tan)
+        .set(0, 0, nearZ / right)
+        .set(1, 1, nearZ / top)
         .set(2, 2, -(farZ + nearZ) / (farZ - nearZ))
         .set(2, 3, -1.0f)
         .set(3, 2, -(2 * farZ * nearZ) / (farZ - nearZ))

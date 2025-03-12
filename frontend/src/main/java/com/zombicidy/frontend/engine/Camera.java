@@ -85,4 +85,6 @@ public class Camera {
   public Vector3D getFront() { return front; }
 
   public Vector3D getUp() { return up; }
+
+  public Vector3D getPosition() { return position; }
 }
