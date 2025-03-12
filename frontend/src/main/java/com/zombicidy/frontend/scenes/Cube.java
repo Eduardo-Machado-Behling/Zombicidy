@@ -16,11 +16,12 @@ import org.lwjgl.opengl.GL30;
 
 public class Cube implements IScene {
   private Engine.GameObject go;
-  private Vector3D rot = new Vector3D(0.3f, 0, 0);
+  private final Vector3D rot = new Vector3D(0.3f, 180, 180);
   private final Camera camera;
   private Vector3D cameraVel = new Vector3D();
-  private Vector2D cameraRot = new Vector2D(90, 0);
+  private final Vector2D cameraRot = new Vector2D(90, 0);
 
+  private float fov = 60;
   private final float lastX = Window.get().width() / 2;
   private final float lastY = Window.get().width() / 2;
   private final double[] lastXS = new double[1];
@@ -39,14 +40,14 @@ public class Cube implements IScene {
     // };
 
     WavefrontLoader.WavefrontData data =
-        WavefrontLoader.loadOBJ("assets/models/untitled.obj");
+        WavefrontLoader.loadOBJ("assets/models/monkey.obj");
 
     go = Engine.get().makeGameObject(data.mesh);
     go.addComponent("texture", new Texture(AssetManager.get().getTexture("foo"),
                                            new Texture.TextureParam()));
     // Engine.get().setCamera(new Camera());
     camera =
-        Camera.Perspective(60, Window.get().getAspectRatio(), 0.1f, 10.0f)
+        Camera.Perspective(fov, Window.get().getAspectRatio(), 0.1f, 10.0f)
             .lookAt(new Vector3D(0, 0, -3), new Vector3D(0, 0, 3).normalize(),
                     new Vector3D(0, -1, 0).normalize());
     Engine.get().setCamera(camera);
@@ -64,8 +65,8 @@ public class Cube implements IScene {
     GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
 
     // rot.y += elapsed_time;
-    // rot.y += 2 * elapsed_time;
-    // rot.z += elapsed_time / 4;
+    // rot.z += 2 * elapsed_time;
+    // rot.x += elapsed_time / 4;
 
     Transform t = (Transform)go.getComponent().get("transform");
     t.setMatrix(SquareMatrix.rotation(rot));
@@ -173,5 +174,17 @@ public class Cube implements IScene {
       camera.rotate(cameraRot.x, cameraRot.y);
       GLFW.glfwSetCursorPos(window, lastX, lastY);
     }
+  }
+
+  @Override
+  public void onMouseScroll(long window, double xoffset, double yoffset) {
+    fov -= (float)yoffset;
+    if (fov < 1.0f)
+      fov = 1.0f;
+    if (fov > 120.0f)
+      fov = 120.0f;
+
+    camera.setProjection(SquareMatrix.Perspective(
+        fov, Window.get().getAspectRatio(), 0.1f, 10.0f));
   }
 }

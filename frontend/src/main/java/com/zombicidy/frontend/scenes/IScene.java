@@ -11,6 +11,7 @@ public interface IScene {
 
   abstract void onResize(long window, int width, int height);
   abstract void onMouseMove(long window, double xpos, double ypos);
+  abstract void onMouseScroll(long window, double xoffset, double yoffset);
 
   abstract void clean();
 }

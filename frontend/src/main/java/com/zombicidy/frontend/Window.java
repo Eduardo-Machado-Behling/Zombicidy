@@ -5,7 +5,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL40;
 
-
 public class Window {
   static private Window rendererInstance = null;
 
@@ -34,6 +33,7 @@ public class Window {
     GLFW.glfwSetKeyCallback(window, this::onKeyEvent);
     GLFW.glfwSetMouseButtonCallback(window, this::onMouseEvent);
     GLFW.glfwSetCursorPosCallback(window, this::onMouseMove);
+    GLFW.glfwSetScrollCallback(window, this::onMouseScroll);
     GLFW.glfwSetFramebufferSizeCallback(window, this::onResize);
   }
 
@@ -43,6 +43,10 @@ public class Window {
     }
 
     return rendererInstance;
+  }
+
+  private void onMouseScroll(long window, double xoffset, double yoffset) {
+    scene.onMouseScroll(window, xoffset, yoffset);
   }
 
   private void onResize(long window, int width, int height) {

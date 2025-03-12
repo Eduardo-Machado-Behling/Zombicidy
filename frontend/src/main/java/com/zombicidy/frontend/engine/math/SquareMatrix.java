@@ -3,7 +3,6 @@ package com.zombicidy.frontend.engine.math;
 import java.nio.FloatBuffer;
 import org.lwjgl.system.MemoryStack;
 
-
 public class SquareMatrix {
   private final float[] data;
   private final int size;
@@ -83,7 +82,7 @@ public class SquareMatrix {
                           .set(0, 0, +(float)Math.cos(vector.z))
                           .set(0, 1, -(float)Math.sin(vector.z))
                           .set(1, 0, +(float)Math.sin(vector.z))
-                          .set(1, 1, -(float)Math.cos(vector.z));
+                          .set(1, 1, +(float)Math.cos(vector.z));
 
     SquareMatrix Ry = SquareMatrix.identity(4)
                           .set(0, 0, +(float)Math.cos(vector.y))
