@@ -46,7 +46,7 @@ public class Cube implements IScene {
     go[0] = Engine.get().makeGameObject(data.mesh);
     go[0].addComponent("material", new Material(data.materials));
     go[0].addComponent("texture",
-                       new Texture(AssetManager.get().getTexture("foo"),
+                       new Texture(AssetManager.get().getTexture("sample"),
                                    new Texture.TextureParam()));
     go[0].addComponent("color",
                        new Color(new Vector3D(1.0f, 0.2f, 0.5f), 0.0f));

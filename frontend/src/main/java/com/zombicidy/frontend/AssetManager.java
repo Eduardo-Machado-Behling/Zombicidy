@@ -34,16 +34,22 @@ public class AssetManager {
   }
 
   private void loadTexture(String name) {
+    // Path should be relative to the resources folder root
     String filePath = "assets/textures/" + name + ".png";
+
     try (MemoryStack stack = MemoryStack.stackPush()) {
+      // Get resource as stream directly - more reliable in JAR files
       InputStream inputStream =
           getClass().getClassLoader().getResourceAsStream(filePath);
-      ByteBuffer imageBuffer =
-          ByteBuffer.allocateDirect(inputStream.available());
-      byte[] byteArray = new byte[inputStream.available()];
-      inputStream.read(byteArray);
-      imageBuffer.put(byteArray); // Put bytes into the ByteBuffer
-      imageBuffer.flip();         // Prepare the byte buffer
+      if (inputStream == null) {
+        throw new RuntimeException("Failed to find resource: " + filePath);
+      }
+
+      // Read all bytes from the input stream
+      byte[] byteArray = inputStream.readAllBytes();
+      ByteBuffer imageBuffer = ByteBuffer.allocateDirect(byteArray.length);
+      imageBuffer.put(byteArray);
+      imageBuffer.flip(); // Prepare the byte buffer
 
       // Load the image using STB
       IntBuffer width = stack.mallocInt(1);
@@ -53,15 +59,17 @@ public class AssetManager {
       // Decode the image
       ByteBuffer image = STBImage.stbi_load_from_memory(
           imageBuffer, width, height, channels, STBImage.STBI_rgb_alpha);
+
       if (image == null) {
-        throw new RuntimeException("Failed to load image: " + filePath);
+        throw new RuntimeException("Failed to load image: " +
+                                   STBImage.stbi_failure_reason());
       }
 
       textures.put(name, new Texture.TextureData(width.get(0), height.get(0),
                                                  channels.get(0), image));
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new RuntimeException("Failed to load texture.");
+      throw new RuntimeException("Failed to load texture: " + e.getMessage(),
+                                 e);
     }
   }
 }
