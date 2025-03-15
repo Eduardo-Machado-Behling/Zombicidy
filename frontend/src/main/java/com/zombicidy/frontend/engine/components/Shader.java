@@ -12,6 +12,7 @@ public class Shader implements Component {
   @Override
   public void bind() {
     ShaderManager.get().useProgram(program);
+    ShaderManager.get().setUniform("isTextured", 0);
   }
   @Override
   public void clean() {}

@@ -1,6 +1,8 @@
 package com.zombicidy.frontend.engine;
 
+import com.zombicidy.frontend.Window;
 import com.zombicidy.frontend.engine.math.SquareMatrix;
+import com.zombicidy.frontend.engine.math.Vector2D;
 import com.zombicidy.frontend.engine.math.Vector3D;
 
 public class Camera {
@@ -10,6 +12,7 @@ public class Camera {
   private Vector3D position;
   private Vector3D front;
   private Vector3D up;
+  private float fov;
 
   public Camera() {}
 
@@ -24,6 +27,7 @@ public class Camera {
     Camera camera = new Camera();
 
     camera.projection = SquareMatrix.Perspective(fov, aspectRatio, nearZ, farZ);
+    camera.fov = fov;
 
     return camera;
   }
@@ -32,7 +36,7 @@ public class Camera {
     this.position = pos;
     this.front = target;
     this.up = up;
-    this.view = SquareMatrix.lookAt(pos, target, up);
+    this.view = SquareMatrix.lookAt(pos, front.add(position), up);
 
     return this;
   }
@@ -45,6 +49,35 @@ public class Camera {
     position = position.add(direction.mult(amount));
     updateViewMatrix(); // Recalculate the view matrix
     return this;
+  }
+
+  public Vector3D mouseToWorld(Vector2D mousePos) {
+    // 1. Normalize mouse coordinates to range [-1, 1]
+    float normalizedX = 2.0f * mousePos.x / Window.get().width() - 1.0f;
+    float normalizedY =
+        1.0f - 2.0f * mousePos.y /
+                   Window.get().height(); // Invert Y for OpenGL convention
+
+    Vector3D right = front.cross(up).normalize();
+
+    // 3. Calculate the direction vector based on FOV and aspect ratio
+    float aspectRatio = Window.get().getAspectRatio();
+    float tanHalfFOV = (float)Math.tan(Math.toRadians(fov / 2.0f));
+
+    Vector3D direction = new Vector3D();
+
+    // Calculate the offset from the center of the screen in world space
+    Vector3D rightOffset = right.mult(normalizedX * aspectRatio * tanHalfFOV);
+    Vector3D upOffset = up.mult(normalizedY * tanHalfFOV);
+
+    // The direction vector is the sum of the camera's forward direction and the
+    // offsets
+    direction = direction.add(front);
+    direction = direction.add(rightOffset);
+    direction = direction.add(upOffset);
+
+    // Normalize the resulting direction vector
+    return direction.normalize();
   }
 
   public Camera rotate(float yaw, float pitch) {
@@ -76,8 +109,10 @@ public class Camera {
 
   public SquareMatrix getViewMatrix() { return view; }
 
-  public void setProjection(SquareMatrix projection) {
-    this.projection = projection;
+  public void setProjection(float fov, float aspectRatio, float nearZ,
+                            float farZ) {
+    this.projection = SquareMatrix.Perspective(fov, aspectRatio, nearZ, farZ);
+    this.fov = fov;
   }
 
   public void setView(SquareMatrix view) { this.view = view; }

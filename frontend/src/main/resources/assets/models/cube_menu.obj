@@ -1,6 +1,6 @@
 # Blender v2.92.0 OBJ File: ''
 # www.blender.org
-mtllib untitled.mtl
+mtllib cube_menu.mtl
 o Cube
 v 1.000000 1.000000 -1.000000
 v 1.000000 -1.000000 -1.000000

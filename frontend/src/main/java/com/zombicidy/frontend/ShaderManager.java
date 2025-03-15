@@ -59,6 +59,9 @@ public class ShaderManager {
   public int getUniformLocation(String name) {
     int loc = GL40.glGetUniformLocation(currentProgram, name);
 
+    if (loc == -1) {
+      System.err.println("Couldn't find " + name);
+    }
     return loc;
   }
 

@@ -21,6 +21,12 @@ public class Vector4D {
     this.w = w;
   }
 
+  public Vector4D(Vector3D position, float f) {
+    x = position.x;
+    y = position.y;
+    z = position.z;
+    w = f;
+  }
   static public int SizeBytes() { return 2 * Float.BYTES; }
 
   @Override
@@ -37,4 +43,6 @@ public class Vector4D {
 
     return buffer;
   }
+  public Vector3D toVec3() { return new Vector3D(x, y, z); }
+  public Vector4D divideW() { return new Vector4D(x / w, y / w, z / w, w); }
 }

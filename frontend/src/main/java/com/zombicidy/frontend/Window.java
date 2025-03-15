@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL40;
 
+
 public class Window {
   static private Window rendererInstance = null;
 
@@ -100,6 +101,7 @@ public class Window {
     if (this.scene != null)
       this.scene.clean();
     this.scene = scene;
+    this.scene.init();
   }
 
   public float getAspectRatio() { return (float)width / (float)height; }
@@ -111,4 +113,6 @@ public class Window {
   public int height() { return height; }
 
   public int width() { return width; }
+
+  public void terminate() { GLFW.glfwSetWindowShouldClose(window, true); }
 }

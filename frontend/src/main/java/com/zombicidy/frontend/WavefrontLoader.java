@@ -1,8 +1,8 @@
 package com.zombicidy.frontend;
 
 import com.zombicidy.frontend.engine.components.Material.MaterialData;
-import com.zombicidy.frontend.engine.components.Mesh;
-import com.zombicidy.frontend.engine.components.Mesh.Vertex;
+import com.zombicidy.frontend.engine.components.Mesh3D;
+import com.zombicidy.frontend.engine.components.Mesh3D.Vertex;
 import com.zombicidy.frontend.engine.math.Vector2D;
 import com.zombicidy.frontend.engine.math.Vector3D;
 import java.io.BufferedReader;
@@ -14,13 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 public class WavefrontLoader {
   public static class WavefrontData {
     public final List<MaterialData> materials;
-    public final Mesh mesh;
+    public final Mesh3D mesh;
 
-    public WavefrontData(List<MaterialData> materials, Mesh mesh) {
+    public WavefrontData(List<MaterialData> materials, Mesh3D mesh) {
       this.materials = materials;
       this.mesh = mesh;
     }
@@ -110,7 +109,7 @@ public class WavefrontLoader {
       vertexList.add(new Vertex(vPos, vUv, vNormal, materialIndex));
     }
 
-    Mesh mesh = new Mesh(vertexList);
+    Mesh3D mesh = new Mesh3D(vertexList);
     List<MaterialData> materialsData = loadMaterials(materialFile, materials);
 
     return new WavefrontData(materialsData, mesh);

@@ -23,6 +23,12 @@ public class Vector3D {
     this.z = z;
   }
 
+  public Vector3D(Vector3D pos) {
+    x = pos.x;
+    y = pos.y;
+    z = pos.z;
+  }
+
   static public int SizeBytes() { return 3 * Float.BYTES; }
 
   public Vector3D cross(Vector3D other) {

@@ -4,6 +4,7 @@ import com.zombicidy.frontend.ShaderManager;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL40;
 
+
 public class Texture implements Component {
   private final int textId;
 
@@ -68,6 +69,7 @@ public class Texture implements Component {
   public void bind() {
     GL40.glBindTexture(GL40.GL_TEXTURE_2D, textId);
     ShaderManager.get().setUniform("blendFactor", 0);
+    ShaderManager.get().setUniform("isTextured", 1);
   }
 
   @Override

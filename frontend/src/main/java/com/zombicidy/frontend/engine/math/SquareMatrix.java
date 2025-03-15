@@ -51,6 +51,21 @@ public class SquareMatrix {
     return this;
   }
 
+  public Vector4D multiply(Vector4D v) {
+    Vector4D vec = new Vector4D();
+
+    vec.x =
+        get(0, 0) * v.x + get(0, 1) * v.y + get(0, 2) * v.z + get(0, 3) * v.w;
+    vec.y =
+        get(1, 0) * v.x + get(1, 1) * v.y + get(1, 2) * v.z + get(1, 3) * v.w;
+    vec.z =
+        get(2, 0) * v.x + get(2, 1) * v.y + get(2, 2) * v.z + get(2, 3) * v.w;
+    vec.w =
+        get(3, 0) * v.x + get(3, 1) * v.y + get(3, 2) * v.z + get(3, 3) * v.w;
+
+    return vec;
+  }
+
   // Matrix multiplication
   public SquareMatrix multiply(SquareMatrix other) {
     System.out.println("A*B");
@@ -113,6 +128,99 @@ public class SquareMatrix {
         .set(3, 0, vector.x)
         .set(3, 1, vector.y)
         .set(3, 2, vector.z);
+  }
+
+  // thanks <https://stackoverflow.com/questions/1148309/inverting-a-4x4-matrix>
+  // will try to understand this later
+  public SquareMatrix inverse() {
+    if (this.size != 4) {
+      throw new RuntimeException("Only supported for 4x4");
+    }
+
+    SquareMatrix inv = SquareMatrix.identity(4);
+    float det;
+
+    inv.data[0] = data[5] * data[10] * data[15] -
+                  data[5] * data[11] * data[14] - data[9] * data[6] * data[15] +
+                  data[9] * data[7] * data[14] + data[13] * data[6] * data[11] -
+                  data[13] * data[7] * data[10];
+
+    inv.data[4] = -data[4] * data[10] * data[15] +
+                  data[4] * data[11] * data[14] + data[8] * data[6] * data[15] -
+                  data[8] * data[7] * data[14] - data[12] * data[6] * data[11] +
+                  data[12] * data[7] * data[10];
+
+    inv.data[8] = data[4] * data[9] * data[15] - data[4] * data[11] * data[13] -
+                  data[8] * data[5] * data[15] + data[8] * data[7] * data[13] +
+                  data[12] * data[5] * data[11] - data[12] * data[7] * data[9];
+
+    inv.data[12] = -data[4] * data[9] * data[14] +
+                   data[4] * data[10] * data[13] +
+                   data[8] * data[5] * data[14] - data[8] * data[6] * data[13] -
+                   data[12] * data[5] * data[10] + data[12] * data[6] * data[9];
+
+    inv.data[1] = -data[1] * data[10] * data[15] +
+                  data[1] * data[11] * data[14] + data[9] * data[2] * data[15] -
+                  data[9] * data[3] * data[14] - data[13] * data[2] * data[11] +
+                  data[13] * data[3] * data[10];
+
+    inv.data[5] = data[0] * data[10] * data[15] -
+                  data[0] * data[11] * data[14] - data[8] * data[2] * data[15] +
+                  data[8] * data[3] * data[14] + data[12] * data[2] * data[11] -
+                  data[12] * data[3] * data[10];
+
+    inv.data[9] = -data[0] * data[9] * data[15] +
+                  data[0] * data[11] * data[13] + data[8] * data[1] * data[15] -
+                  data[8] * data[3] * data[13] - data[12] * data[1] * data[11] +
+                  data[12] * data[3] * data[9];
+
+    inv.data[13] = data[0] * data[9] * data[14] -
+                   data[0] * data[10] * data[13] -
+                   data[8] * data[1] * data[14] + data[8] * data[2] * data[13] +
+                   data[12] * data[1] * data[10] - data[12] * data[2] * data[9];
+
+    inv.data[2] = data[1] * data[6] * data[15] - data[1] * data[7] * data[14] -
+                  data[5] * data[2] * data[15] + data[5] * data[3] * data[14] +
+                  data[13] * data[2] * data[7] - data[13] * data[3] * data[6];
+
+    inv.data[6] = -data[0] * data[6] * data[15] + data[0] * data[7] * data[14] +
+                  data[4] * data[2] * data[15] - data[4] * data[3] * data[14] -
+                  data[12] * data[2] * data[7] + data[12] * data[3] * data[6];
+
+    inv.data[10] = data[0] * data[5] * data[15] - data[0] * data[7] * data[13] -
+                   data[4] * data[1] * data[15] + data[4] * data[3] * data[13] +
+                   data[12] * data[1] * data[7] - data[12] * data[3] * data[5];
+
+    inv.data[14] = -data[0] * data[5] * data[14] +
+                   data[0] * data[6] * data[13] + data[4] * data[1] * data[14] -
+                   data[4] * data[2] * data[13] - data[12] * data[1] * data[6] +
+                   data[12] * data[2] * data[5];
+
+    inv.data[3] = -data[1] * data[6] * data[11] + data[1] * data[7] * data[10] +
+                  data[5] * data[2] * data[11] - data[5] * data[3] * data[10] -
+                  data[9] * data[2] * data[7] + data[9] * data[3] * data[6];
+
+    inv.data[7] = data[0] * data[6] * data[11] - data[0] * data[7] * data[10] -
+                  data[4] * data[2] * data[11] + data[4] * data[3] * data[10] +
+                  data[8] * data[2] * data[7] - data[8] * data[3] * data[6];
+
+    inv.data[11] = -data[0] * data[5] * data[11] + data[0] * data[7] * data[9] +
+                   data[4] * data[1] * data[11] - data[4] * data[3] * data[9] -
+                   data[8] * data[1] * data[7] + data[8] * data[3] * data[5];
+
+    inv.data[15] = data[0] * data[5] * data[10] - data[0] * data[6] * data[9] -
+                   data[4] * data[1] * data[10] + data[4] * data[2] * data[9] +
+                   data[8] * data[1] * data[6] - data[8] * data[2] * data[5];
+
+    det = data[0] * inv.data[0] + data[1] * inv.data[4] +
+          data[2] * inv.data[8] + data[3] * inv.data[12];
+
+    if (det == 0)
+      throw new RuntimeException("Inversable matrix");
+
+    det = 1.0f / det;
+
+    return inv.multiply(det);
   }
 
   public static SquareMatrix lookAt(Vector3D eye, Vector3D center,

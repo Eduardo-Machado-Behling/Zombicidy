@@ -1,3 +1,22 @@
 package com.zombicidy.frontend.engine.lights;
 
-public class DirectionalLight {}
+import com.zombicidy.frontend.ShaderManager;
+import com.zombicidy.frontend.engine.math.Vector3D;
+
+public class DirectionalLight extends Light {
+  public Vector3D direction;
+
+  public DirectionalLight(Vector3D position, Vector3D ambient, Vector3D diffuse,
+                          Vector3D specular) {
+    super(ambient, diffuse, specular);
+    this.direction = position;
+  }
+
+  @Override
+  public int bind(int i) {
+    String base = String.format("dLight");
+    ShaderManager.get().setUniform(base + ".direction", direction);
+    super.bind(base, i);
+    return 0;
+  }
+}

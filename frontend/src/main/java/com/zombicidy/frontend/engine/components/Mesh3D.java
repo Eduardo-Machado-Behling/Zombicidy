@@ -8,8 +8,7 @@ import java.util.List;
 import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
 
-
-public class Mesh implements Component {
+public class Mesh3D implements Component {
   final private int vbo;
   final private int vao;
   final private int vertexAmount;
@@ -54,7 +53,7 @@ public class Mesh implements Component {
     public float[] getData() { return data; }
   }
 
-  public Mesh(List<Vertex> vertexs) {
+  public Mesh3D(List<Vertex> vertexs) {
     vbo = GL40.glGenBuffers();
     vao = GL40.glGenVertexArrays();
     vertexAmount = vertexs.size();

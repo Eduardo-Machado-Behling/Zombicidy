@@ -1,5 +1,6 @@
 package com.zombicidy.frontend;
 
+import com.zombicidy.frontend.engine.components.Shader;
 import com.zombicidy.frontend.engine.components.Texture;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,11 +10,13 @@ import java.util.HashMap;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
-
 public class AssetManager {
   static private AssetManager instance = null;
 
-  private HashMap<String, Texture.TextureData> textures = new HashMap<>();
+  private final HashMap<String, Texture.TextureData> textures = new HashMap<>();
+  private final HashMap<String, WavefrontLoader.WavefrontData> wavefronts =
+      new HashMap<>();
+  private final HashMap<String, Shader> shaders = new HashMap<>();
 
   private AssetManager() {}
 
@@ -31,6 +34,27 @@ public class AssetManager {
     }
 
     return textures.get(name);
+  }
+
+  public WavefrontLoader.WavefrontData getWavefront(String name) {
+    if (!wavefronts.containsKey(name)) {
+      loadWavefront(name);
+    }
+
+    return wavefronts.get(name);
+  }
+
+  public Shader getShader(String name) {
+    if (!shaders.containsKey(name)) {
+      shaders.put(name, new Shader(name));
+    }
+
+    return shaders.get(name);
+  }
+
+  private void loadWavefront(String name) {
+    wavefronts.put(name,
+                   WavefrontLoader.loadOBJ("assets/models/" + name + ".obj"));
   }
 
   private void loadTexture(String name) {

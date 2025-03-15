@@ -1,6 +1,7 @@
 package com.zombicidy.frontend.scenes;
 
 public interface IScene {
+  abstract void init();
   abstract void update(double elapsed_time);
   abstract void display(double elapsed_time);
 
