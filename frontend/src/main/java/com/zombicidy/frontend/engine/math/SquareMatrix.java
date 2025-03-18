@@ -68,11 +68,6 @@ public class SquareMatrix {
 
   // Matrix multiplication
   public SquareMatrix multiply(SquareMatrix other) {
-    System.out.println("A*B");
-    System.err.print("A = ");
-    print();
-    System.err.print("\nB = ");
-    print();
     SquareMatrix result = new SquareMatrix(size);
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {

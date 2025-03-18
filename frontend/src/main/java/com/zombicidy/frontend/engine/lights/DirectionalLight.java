@@ -6,10 +6,10 @@ import com.zombicidy.frontend.engine.math.Vector3D;
 public class DirectionalLight extends Light {
   public Vector3D direction;
 
-  public DirectionalLight(Vector3D position, Vector3D ambient, Vector3D diffuse,
-                          Vector3D specular) {
+  public DirectionalLight(Vector3D direction, Vector3D ambient,
+                          Vector3D diffuse, Vector3D specular) {
     super(ambient, diffuse, specular);
-    this.direction = position;
+    this.direction = direction;
   }
 
   @Override

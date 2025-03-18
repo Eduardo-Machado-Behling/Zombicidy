@@ -7,7 +7,6 @@ import java.util.HashMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL40;
 
-
 public class ShaderManager {
   static private ShaderManager instance = null;
 
@@ -54,6 +53,10 @@ public class ShaderManager {
 
   public void setUniform(String name, float val) {
     GL40.glUniform1f(getUniformLocation(name), val);
+  }
+
+  public void setUniform(String name, int val) {
+    GL40.glUniform1ui(getUniformLocation(name), val);
   }
 
   public int getUniformLocation(String name) {

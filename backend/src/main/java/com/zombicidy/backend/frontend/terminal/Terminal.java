@@ -11,17 +11,22 @@ import java.util.Scanner;
 public class Terminal extends BaseFrontend {
   private Grid board[][];
   private Scanner reader = new Scanner(System.in);
+  private EventListener ev;
   private boolean combatBool = false;
 
   public Terminal(EventListener eventListener) {
     super(eventListener);
+    ev = eventListener;
     board = new Grid[10][10];
+  }
+
+  public void loadMap() {
     int[] position = new int[2];
     for (int x = 0; x < 10; x++) {
       for (int y = 0; y < 10; y++) {
         position[0] = x;
         position[1] = y;
-        board[x][y] = eventListener.getGrid(position);
+        board[x][y] = ev.getGrid(position);
       }
     }
   }

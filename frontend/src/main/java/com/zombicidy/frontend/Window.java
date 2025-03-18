@@ -1,16 +1,21 @@
 package com.zombicidy.frontend;
 
-import com.zombicidy.frontend.scenes.IScene;
+import com.zombicidy.backend.EventListener;
+import com.zombicidy.backend.board.baseclasses.Grid;
+import com.zombicidy.backend.board.combat.Combat;
+import com.zombicidy.backend.frontend.FrontendAPI;
+import com.zombicidy.frontend.scenes.Scene;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL40;
 
 
-public class Window {
+public class Window implements FrontendAPI {
   static private Window rendererInstance = null;
+  private EventListener eventListener;
 
   private long window;
-  private IScene scene = null;
+  private Scene scene = null;
 
   private int width = 800;
   private int height = 600;
@@ -85,6 +90,8 @@ public class Window {
 
       curr_time = GLFW.glfwGetTime();
       double elapsed_time = curr_time - last_time;
+      GLFW.glfwSetWindowTitle(
+          window, String.format("Zombicidy (%.0f FPS)", 1 / elapsed_time));
       scene.display(elapsed_time);
       scene.update(elapsed_time);
       last_time = curr_time;
@@ -97,7 +104,7 @@ public class Window {
     GLFW.glfwTerminate();
   }
 
-  public void setScene(IScene scene) {
+  public void setScene(Scene scene) {
     if (this.scene != null)
       this.scene.clean();
     this.scene = scene;
@@ -115,4 +122,102 @@ public class Window {
   public int width() { return width; }
 
   public void terminate() { GLFW.glfwSetWindowShouldClose(window, true); }
+
+  @Override
+  public void FinishCombat() {
+    if (this.scene != null) {
+      this.scene.FinishCombat();
+    }
+  }
+
+  @Override
+  public void Combat(Combat combat) {
+    if (this.scene != null) {
+      this.scene.Combat(combat);
+    }
+  }
+
+  @Override
+  public void ZombieKilled() {
+    if (this.scene != null) {
+      this.scene.ZombieKilled();
+    }
+  }
+
+  @Override
+  public void UseBandage(boolean actionWasMade) {
+    if (this.scene != null) {
+      this.scene.UseBandage(actionWasMade);
+    }
+  }
+
+  @Override
+  public void SurpriseEncounter() {
+    // TODO Auto-generated method stub
+    if (this.scene != null) {
+      this.scene.SurpriseEncounter();
+    }
+  }
+
+  @Override
+  public void PlayerDealtDamage(int damage) {
+    if (this.scene != null) {
+      this.scene.PlayerDealtDamage(damage);
+    }
+  }
+
+  @Override
+  public void PlayerTookDamage(int damage) {
+    if (this.scene != null) {
+      this.scene.PlayerDealtDamage(damage);
+    }
+  }
+
+  @Override
+  public void Redraw(int[] position, Grid grid) {
+    if (this.scene != null) {
+      this.scene.Redraw(position, grid);
+    }
+  }
+
+  @Override
+  public void GainedItem(String item) {
+    if (this.scene != null) {
+      this.scene.GainedItem(item);
+    }
+  }
+
+  @Override
+  public void GameWin() {
+    if (this.scene != null) {
+      this.scene.GameWin();
+    }
+  }
+
+  @Override
+  public void GameLose() {
+    if (this.scene != null) {
+      this.scene.GameLose();
+    }
+  }
+
+  @Override
+  public void PlayerGunNoAmmo() {
+    if (this.scene != null) {
+      this.scene.PlayerGunNoAmmo();
+    }
+  }
+
+  @Override
+  public void PlayerNoGun() {
+    if (this.scene != null) {
+      this.scene.PlayerNoGun();
+    }
+  }
+
+  public EventListener getEventListener() { return eventListener; }
+
+  public void setEventListener(EventListener eventListener) {
+    this.eventListener = eventListener;
+  }
 }

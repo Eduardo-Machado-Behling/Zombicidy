@@ -2,23 +2,29 @@ package com.zombicidy.frontend.engine;
 
 import com.zombicidy.frontend.AssetManager;
 import com.zombicidy.frontend.ShaderManager;
+import com.zombicidy.frontend.Window;
 import com.zombicidy.frontend.engine.components.Component;
 import com.zombicidy.frontend.engine.components.Mesh3D;
 import com.zombicidy.frontend.engine.components.Shader;
 import com.zombicidy.frontend.engine.components.Transform;
 import com.zombicidy.frontend.engine.lights.Light;
+import com.zombicidy.frontend.engine.lights.PointLight;
+import com.zombicidy.frontend.engine.lights.SpotLight;
 import com.zombicidy.frontend.engine.math.Vector3D;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL40;
 
-
-public class Engine {
+public final class Engine {
   public class GameObject {
     private Mesh3D mesh;
     private Shader shader;
     private final HashMap<String, Component> components = new HashMap<>();
+    private boolean visible = true;
 
     public Mesh3D getMesh() { return mesh; }
 
@@ -34,6 +40,10 @@ public class Engine {
     public void rmvComponent(String name) { components.remove(name); }
 
     public HashMap<String, Component> getComponent() { return components; }
+
+    public boolean isVisible() { return visible; }
+
+    public void setVisible(boolean visible) { this.visible = visible; }
   }
 
   final private HashMap<Shader, HashMap<Mesh3D, ArrayList<GameObject>>>
@@ -44,8 +54,51 @@ public class Engine {
 
   private static Engine instance = null;
   private Camera camera;
+  private boolean mouseEnable = false;
 
-  private Engine() {}
+  private int fbo;
+  private int pickingTexture;
+  private int depthTexture;
+
+  private Engine() {
+    // Generate and bind framebuffer
+    fbo = GL40.glGenFramebuffers();
+    GL40.glBindFramebuffer(GL40.GL_FRAMEBUFFER, fbo);
+
+    // Generate texture to store object IDs
+    pickingTexture = GL40.glGenTextures();
+    GL40.glBindTexture(GL40.GL_TEXTURE_2D, pickingTexture);
+    GL40.glTexImage2D(GL40.GL_TEXTURE_2D, 0, GL40.GL_R32UI,
+                      Window.get().width(), Window.get().height(), 0,
+                      GL40.GL_RED_INTEGER, GL40.GL_UNSIGNED_INT,
+                      (ByteBuffer)null);
+    GL40.glTexParameteri(GL40.GL_TEXTURE_2D, GL40.GL_TEXTURE_MIN_FILTER,
+                         GL40.GL_NEAREST);
+    GL40.glTexParameteri(GL40.GL_TEXTURE_2D, GL40.GL_TEXTURE_MAG_FILTER,
+                         GL40.GL_NEAREST);
+
+    // Attach texture to framebuffer
+    GL40.glFramebufferTexture2D(GL40.GL_FRAMEBUFFER, GL40.GL_COLOR_ATTACHMENT0,
+                                GL40.GL_TEXTURE_2D, pickingTexture, 0);
+
+    // Create a depth buffer
+    int depthBuffer = GL40.glGenRenderbuffers();
+    GL40.glBindRenderbuffer(GL40.GL_RENDERBUFFER, depthBuffer);
+    GL40.glRenderbufferStorage(GL40.GL_RENDERBUFFER, GL40.GL_DEPTH_COMPONENT,
+                               Window.get().width(), Window.get().height());
+    GL40.glFramebufferRenderbuffer(GL40.GL_FRAMEBUFFER,
+                                   GL40.GL_DEPTH_ATTACHMENT,
+                                   GL40.GL_RENDERBUFFER, depthBuffer);
+
+    // Check if framebuffer is complete
+    if (GL40.glCheckFramebufferStatus(GL40.GL_FRAMEBUFFER) !=
+        GL40.GL_FRAMEBUFFER_COMPLETE) {
+      throw new RuntimeException("Framebuffer not complete!");
+    }
+
+    // Unbind framebuffer
+    GL40.glBindFramebuffer(GL40.GL_FRAMEBUFFER, 0);
+  }
 
   public static Engine get() {
     if (instance == null) {
@@ -55,20 +108,80 @@ public class Engine {
     return instance;
   }
 
+  public void enableTracking() { this.mouseEnable = true; }
+  public void disableTracking() { this.mouseEnable = false; }
+
   public void setCamera(Camera camera) { this.camera = camera; }
   public Camera getCamera() { return this.camera; }
 
   public void render(float elapsed_time) {
+    if (mouseEnable)
+      renderMouse();
+    render3D(elapsed_time);
+  }
+
+  private void renderMouse() {
+    GL40.glBindFramebuffer(GL40.GL_FRAMEBUFFER, fbo);
+    GL40.glClear(GL40.GL_COLOR_BUFFER_BIT | GL40.GL_DEPTH_BUFFER_BIT);
+
+    // Ensure OpenGL knows we're rendering to an integer buffer
+    GL40.glDrawBuffer(GL40.GL_COLOR_ATTACHMENT0);
+
+    ShaderManager.get().useProgram("mouse");
+
+    ShaderManager.get().setUniform("m_projection",
+                                   camera.getProjectionMatrix());
+    ShaderManager.get().setUniform("m_view", camera.getViewMatrix());
+    for (HashMap<Mesh3D, ArrayList<GameObject>> hgo : gameObjects.values()) {
+      for (Entry<Mesh3D, ArrayList<GameObject>> mgo : hgo.entrySet()) {
+        mgo.getKey().bind();
+
+        for (GameObject go : mgo.getValue()) {
+          if (!go.getComponent().containsKey("UUID"))
+            continue;
+
+          go.getComponent().get("UUID").bind();
+          go.getComponent().get("transform").bind();
+
+          GL40.glDrawArrays(GL40.GL_TRIANGLES, 0, go.getMesh().verticeAmount());
+        }
+      }
+    }
+
+    // Unbind framebuffer
+    GL40.glBindFramebuffer(GL40.GL_FRAMEBUFFER, 0);
+  }
+
+  public int getUUID(int mouseX, int mouseY) {
+    GL40.glBindFramebuffer(GL40.GL_FRAMEBUFFER, fbo);
+
+    // Read the pixel at the mouse position
+    IntBuffer pixelBuffer = BufferUtils.createIntBuffer(1);
+    GL40.glReadPixels(mouseX, Window.get().height() - mouseY, 1, 1,
+                      GL40.GL_RED_INTEGER, GL40.GL_UNSIGNED_INT, pixelBuffer);
+
+    GL40.glBindFramebuffer(GL40.GL_FRAMEBUFFER, 0);
+
+    return pixelBuffer.get(0); // Return the object ID
+  }
+
+  private void render3D(float elapsed_time) {
     for (Entry<Shader, HashMap<Mesh3D, ArrayList<GameObject>>> entry :
          gameObjects.entrySet()) {
 
       entry.getKey().bind();
 
       int i = 0;
+      int j = 0;
       for (Light light : lights) {
-        i += light.bind(i);
+        if (light instanceof PointLight)
+          i += light.bind(i);
+        if (light instanceof SpotLight)
+          j += light.bind(i);
       }
 
+      ShaderManager.get().setUniform("pLightCount", i);
+      ShaderManager.get().setUniform("spotLightCount", j);
       ShaderManager.get().setUniform("viewPos", camera.getPosition());
       ShaderManager.get().setUniform("m_projection",
                                      camera.getProjectionMatrix());
@@ -81,14 +194,19 @@ public class Engine {
 
         for (GameObject go : en.getValue()) {
 
-          for (Component elem : go.getComponent().values()) {
-            elem.bind();
+          if (!go.isVisible())
+            continue;
+
+          for (Entry<String, Component> elem : go.getComponent().entrySet()) {
+            if (!"UUID".equals(elem.getKey()))
+              elem.getValue().bind();
           }
 
           GL40.glDrawArrays(GL40.GL_TRIANGLES, 0, go.getMesh().verticeAmount());
 
-          for (Component elem : go.getComponent().values()) {
-            elem.unbind();
+          for (Entry<String, Component> elem : go.getComponent().entrySet()) {
+            if (!"UUID".equals(elem.getKey()))
+              elem.getValue().unbind();
           }
         }
       }

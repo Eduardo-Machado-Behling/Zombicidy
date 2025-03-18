@@ -12,6 +12,7 @@ public class Menu extends JFrame {
   private JButton medium = new JButton("Medium");
   private JButton hard = new JButton("Hard");
   private Font heading = new Font("Times Roman", Font.BOLD, 20);
+
   public Menu() {
     this.setTitle("Menu");
     this.setSize(600, 600);
@@ -26,7 +27,7 @@ public class Menu extends JFrame {
       @Override
       public void actionPerformed(ActionEvent e) {
         frame.dispose();
-        new EventListener("easy");
+        new EventListener(null);
       }
     });
 
@@ -36,7 +37,7 @@ public class Menu extends JFrame {
       @Override
       public void actionPerformed(ActionEvent e) {
         frame.dispose();
-        new EventListener("medium");
+        new EventListener(null);
       }
     });
 
@@ -46,7 +47,7 @@ public class Menu extends JFrame {
       @Override
       public void actionPerformed(ActionEvent e) {
         frame.dispose();
-        new EventListener("hard");
+        new EventListener(null);
       }
     });
 

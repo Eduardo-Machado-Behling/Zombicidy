@@ -54,6 +54,13 @@ public class Transform implements Component {
     genMatrix();
   }
 
+  public void set(Vector3D translation, Vector3D scale, Vector3D rotation) {
+    this.translation = translation;
+    this.scale = scale;
+    this.rotation = rotation;
+    genMatrix();
+  }
+
   public Vector3D getScale() { return scale; }
 
   public void setScale(Vector3D scale) {

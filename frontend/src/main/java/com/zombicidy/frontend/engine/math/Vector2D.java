@@ -15,4 +15,6 @@ public class Vector2D {
   public String toString() {
     return String.format("Vector2(%.2f, %.2f)", x, y);
   }
+
+  public float length() { return x * x + y * y; }
 }

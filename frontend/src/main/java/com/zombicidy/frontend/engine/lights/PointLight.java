@@ -37,4 +37,8 @@ public class PointLight extends Light {
     super.bind(base, i);
     return 1;
   }
+
+  public Vector3D getPosition() { return position; }
+
+  public void setPosition(Vector3D position) { this.position = position; }
 }

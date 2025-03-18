@@ -105,6 +105,30 @@ public class Camera {
     return this;
   }
 
+  public Camera rotateLooking(float yaw, float pitch, Vector3D target) {
+    // Convert yaw and pitch to radians
+    float yawRad = (float)Math.toRadians(yaw);
+    float pitchRad = (float)Math.toRadians(pitch);
+
+    // Create a rotation matrix (yaw rotation around Y, pitch rotation around X)
+    float cosPitch = (float)Math.cos(pitchRad);
+    float sinPitch = (float)Math.sin(pitchRad);
+    float cosYaw = (float)Math.cos(yawRad);
+    float sinYaw = (float)Math.sin(yawRad);
+
+    // Compute the rotated front vector
+    Vector3D newFront = new Vector3D(cosYaw * cosPitch, // X
+                                     sinPitch,          // Y
+                                     sinYaw * cosPitch  // Z
+                                     )
+                            .normalize();
+
+    // Combine the new rotation with the existing front
+    front = target;
+    this.view = SquareMatrix.lookAt(position, front, up);
+    return this;
+  }
+
   public SquareMatrix getProjectionMatrix() { return projection; }
 
   public SquareMatrix getViewMatrix() { return view; }
@@ -122,4 +146,10 @@ public class Camera {
   public Vector3D getUp() { return up; }
 
   public Vector3D getPosition() { return position; }
+
+  public void moveLooking(Vector3D pos, Vector3D cameraTarget) {
+    this.front = cameraTarget.sub(pos).mult(-1);
+    this.position = pos;
+    this.view = SquareMatrix.lookAt(pos, cameraTarget, up);
+  }
 }

@@ -19,19 +19,19 @@ public class Board {
   private EventListener eventListener;
   private String[][] map;
 
-  public Board(String difficulty, boolean load, EventListener eventListener) {
+  public Board(EventListener eventListener) {
     this.eventListener = eventListener;
-    FileReader fileReader = new FileReader();
-    map = fileReader.ReadRamdomMap();
-    gameSettings = fileReader.ReadSettings(difficulty);
-    StartBoard();
   }
 
   public Grid GetGrid(int[] position) {
     return board[position[0]][position[1]];
   }
 
-  public void StartBoard() {
+  public void StartBoard(String difficulty) {
+    FileReader fileReader = new FileReader();
+    map = fileReader.ReadRamdomMap();
+    gameSettings = fileReader.ReadSettings(difficulty);
+
     int[] position = new int[2];
     for (int x = 0; x < 10; x++) {
       for (int y = 0; y < 10; y++) {
@@ -147,11 +147,14 @@ public class Board {
         InitiateCombat(position, false);
         break;
       }
+    } else {
+      return;
     }
     zombies.removeAll(toRemoveZombie);
     toRemoveZombie.clear();
     toRemoveZombie = new ArrayList<CommomZombie>();
     MoveZombies();
+    eventListener.Redraw(player.getPosition(), board[position[0]][position[1]]);
   }
 
   public void OpenChest(Chest chest) {
@@ -193,7 +196,6 @@ public class Board {
     board[lastPosition[0]][lastPosition[1]] = new Ground();
     board[lastPosition[0]][lastPosition[1]].setPosition(lastPosition);
     player.setPosition(position);
-    eventListener.Redraw(position, board[position[0]][position[1]]);
     eventListener.Redraw(lastPosition, board[lastPosition[0]][lastPosition[1]]);
   }
 
