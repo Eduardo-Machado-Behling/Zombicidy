@@ -8,9 +8,9 @@ layout(location = 3) in int iMaterial;
 uniform mat4 m_model;
 uniform mat4 m_view;
 uniform mat4 m_projection;
-uniform uint UUID;
+uniform int UUID;
 
-flat out uint v_UUID; // Pass UUID to the fragment shader
+flat out int v_UUID; // Pass UUID to the fragment shader
 
 void main() {
   v_UUID = UUID; // Assign UUID to pass-through variable

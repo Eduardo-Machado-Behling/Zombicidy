@@ -54,9 +54,9 @@ uniform float blendFactor;
 
 uniform Material materials[10];
 
-uniform uint pLightCount;
-uniform uint spotLightCount;
-uniform uint isTextured;
+uniform int pLightCount;
+uniform int spotLightCount;
+uniform int isTextured;
 
 uniform PointLight pLights[10];
 uniform SpotLight spotLights[10];
@@ -69,18 +69,17 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir,
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir,
                    Material material);
 void main() {
-  // properties
   vec3 norm = normalize(normal);
   vec3 viewDir = normalize(viewPos - fragPos);
 
   vec3 result = CalcDirLight(dLight, norm, viewDir, materials[materialIndex]);
 
-  for (uint i = 0u; i < pLightCount; i++) {
+  for (int i = 0; i < pLightCount; i++) {
     result += CalcPointLight(pLights[i], norm, fragPos, viewDir,
                              materials[materialIndex]);
   }
 
-  for (uint j = 0u; j < spotLightCount; j++) {
+  for (int j = 0; j < spotLightCount; j++) {
     result += CalcSpotLight(spotLights[j], norm, fragPos, viewDir,
                             materials[materialIndex]);
   }
@@ -89,7 +88,7 @@ void main() {
   // result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
 
   vec4 objectColor = vec4(solidColor, 1.0);
-  if (isTextured == 1u) {
+  if (isTextured == 1) {
     // fragColor = vec4(0.0, 0.0, 0.0, 1.0);
     vec4 textureColor = texture(textureSampler, texCoords);
     objectColor = mix(textureColor, objectColor, blendFactor);

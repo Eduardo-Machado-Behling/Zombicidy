@@ -6,7 +6,7 @@ out vec4 fragColor;
 uniform vec3 solidColor;
 uniform float blendFactor;
 uniform sampler2D textureSampler;
-uniform uint isTextured;
+uniform int isTextured;
 
 uniform float progress;
 
@@ -14,7 +14,7 @@ void main() {
   vec4 textureColor = texture(textureSampler, texCoords);
   vec4 objectColor;
 
-  if (isTextured == 1u) {
+  if (isTextured == 1) {
     objectColor =
         vec4(mix(textureColor.xyz, solidColor, blendFactor), textureColor.w);
     if (texCoords.x < progress) {
