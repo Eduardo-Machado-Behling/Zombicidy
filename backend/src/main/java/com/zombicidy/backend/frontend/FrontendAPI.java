@@ -1,6 +1,7 @@
 package com.zombicidy.backend.frontend;
 
 import com.zombicidy.backend.board.baseclasses.Grid;
+import com.zombicidy.backend.board.characters.CommomZombie;
 import com.zombicidy.backend.board.combat.Combat;
 
 public interface FrontendAPI {
@@ -8,7 +9,7 @@ public interface FrontendAPI {
 
   public abstract void Combat(Combat combat);
 
-  public abstract void ZombieKilled();
+  public abstract void ZombieKilled(CommomZombie zombie);
 
   public abstract void UseBandage(boolean actionWasMade);
 

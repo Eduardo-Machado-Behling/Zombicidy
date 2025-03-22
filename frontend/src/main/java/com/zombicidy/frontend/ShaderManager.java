@@ -1,11 +1,13 @@
 package com.zombicidy.frontend;
 
 import com.zombicidy.frontend.engine.math.SquareMatrix;
+import com.zombicidy.frontend.engine.math.Vector2D;
 import com.zombicidy.frontend.engine.math.Vector3D;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL40;
+
 
 public class ShaderManager {
   static private ShaderManager instance = null;
@@ -73,6 +75,11 @@ public class ShaderManager {
     GL40.glUniform3fv(getUniformLocation(name), vec3.toFloatBuffer(buffer));
   }
 
+  public void setUniform(String name, Vector2D vec2) {
+    buffer.clear();
+    GL40.glUniform3fv(getUniformLocation(name), vec2.toFloatBuffer(buffer));
+  }
+
   private enum ShaderType {
     VERTEX(GL40.GL_VERTEX_SHADER),
     FRAGMENT(GL40.GL_FRAGMENT_SHADER);
@@ -134,7 +141,6 @@ public class ShaderManager {
     }
 
     // Attach the source code to the shader
-    System.err.println(shaderType + "\n" + shaderCode + "\n\n");
     GL40.glShaderSource(shader, shaderCode);
     GL40.glCompileShader(shader);
 
@@ -167,6 +173,23 @@ public class ShaderManager {
       return shaderCode.toString();
     } catch (java.io.IOException e) {
       throw new RuntimeException("Error reading shader file: " + filePath, e);
+    }
+  }
+
+  public void setUniform(String key, Object value) {
+    switch (value.getClass().getSimpleName()) {
+    case "SquareMatrix":
+      setUniform(key, (SquareMatrix)value);
+      break;
+    case "Float":
+      setUniform(key, (float)value);
+      break;
+    case "Vector3D":
+      setUniform(key, (Vector3D)value);
+      break;
+    case "Vector2D":
+      setUniform(key, (Vector2D)value);
+      break;
     }
   }
 }

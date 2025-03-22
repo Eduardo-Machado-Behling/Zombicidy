@@ -18,6 +18,7 @@ public class Board {
   private Map<String, String[]> gameSettings;
   private EventListener eventListener;
   private String[][] map;
+  private boolean reground;
 
   public Board(EventListener eventListener) {
     this.eventListener = eventListener;
@@ -132,41 +133,43 @@ public class Board {
   public void Input(int[] position) {
     Grid grid = board[position[0]][position[1]];
     String type = grid.GetType();
-    if (IsValidMovement(position)) {
-      switch (type) {
-      case "Ground":
-        MovePlayer(position);
-        break;
-      case "Chest":
-        OpenChest((Chest)grid);
-        break;
-      case "GiantZombie":
-      case "RunnerZombie":
-      case "CrawlerZombie":
-      case "CommomZombie":
-        InitiateCombat(position, false);
-        break;
-      }
-    } else {
+    if (!IsValidMovement(position)) {
       return;
     }
-    zombies.removeAll(toRemoveZombie);
-    toRemoveZombie.clear();
-    toRemoveZombie = new ArrayList<CommomZombie>();
-    MoveZombies();
-    eventListener.Redraw(player.getPosition(), board[position[0]][position[1]]);
+    switch (type) {
+    case "Ground":
+      MovePlayer(position);
+      break;
+    case "Chest":
+      OpenChest((Chest)grid);
+      break;
+    case "GiantZombie":
+    case "RunnerZombie":
+    case "CrawlerZombie":
+    case "CommomZombie":
+      eventListener.Redraw(player.getPosition(),
+                           board[position[0]][position[1]]);
+      MovePlayer(position);
+      CommomZombie zombie = (CommomZombie)(grid);
+      InitiateCombat(zombie, false, false);
+      break;
+    }
+
+    if (combat == null)
+      MoveZombies();
   }
 
   public void OpenChest(Chest chest) {
     int[] position = chest.getPosition();
     Item item = chest.Open();
-    eventListener.GainedItem(item.GetType());
     player.GainItem(item);
+    eventListener.GainedItem(item.GetType());
     if (chest.getZombie() != null) {
       board[position[0]][position[1]] = chest.getZombie();
       board[position[0]][position[1]].setPosition(position);
       eventListener.Redraw(position, board[position[0]][position[1]]);
-      InitiateCombat(position, true);
+      MovePlayer(position);
+      InitiateCombat(chest.getZombie(), true, false);
     } else {
       board[position[0]][position[1]] = new Ground();
       board[position[0]][position[1]].setPosition(position);
@@ -197,6 +200,7 @@ public class Board {
     board[lastPosition[0]][lastPosition[1]].setPosition(lastPosition);
     player.setPosition(position);
     eventListener.Redraw(lastPosition, board[lastPosition[0]][lastPosition[1]]);
+    eventListener.Redraw(position, board[position[0]][position[1]]);
   }
 
   public void MoveZombies() {
@@ -212,7 +216,7 @@ public class Board {
         }
         temp = ans.peek().clone();
         if (board[temp[0]][temp[1]] == player) {
-          InitiateCombat(zombie.getPosition().clone(), true);
+          InitiateCombat(zombie, true, true);
           break;
         } else {
           MoveZombie(zombie.getPosition().clone(), temp, zombie);
@@ -239,19 +243,31 @@ public class Board {
   }
 
   public void KillZombie(CommomZombie zombie) {
-    toRemoveZombie.add(zombie);
-    int[] position = zombie.getPosition().clone();
-    board[position[0]][position[1]] = new Ground();
-    board[position[0]][position[1]].setPosition(position);
+    int[] position = zombie.getPosition();
+    if (this.reground) {
+      board[position[0]][position[1]] = new Ground();
+      this.reground = false;
+    }
     eventListener.Redraw(position, board[position[0]][position[1]]);
-    eventListener.ZombieKilled();
+    eventListener.ZombieKilled(zombie);
+    zombies.remove(zombie);
   }
 
-  public void CombatAction(String choise) { combat.Action(choise); }
+  public void CombatAction(String choise) {
+    if (choise == "IBandage") {
+      player.UseBandage();
+      eventListener.UseBandage(true);
+    } else {
+      combat.Action(choise);
+    }
+  }
 
-  public void InitiateCombat(int[] position, boolean surpriseEncounter) {
-    combat = new Combat(player, (CommomZombie)board[position[0]][position[1]],
-                        this, eventListener);
+  public void InitiateCombat(CommomZombie zombie, boolean surpriseEncounter,
+                             boolean reground) {
+    combat = new Combat(player, zombie, this, eventListener);
     combat.Init(surpriseEncounter);
+    this.reground = reground;
   }
+
+  public Player getPlayer() { return player; }
 }

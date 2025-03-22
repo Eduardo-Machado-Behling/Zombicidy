@@ -1,14 +1,19 @@
 package com.zombicidy.frontend;
 
+import static org.lwjgl.system.MemoryStack.stackPush;
+
 import com.zombicidy.backend.EventListener;
 import com.zombicidy.backend.board.baseclasses.Grid;
+import com.zombicidy.backend.board.characters.CommomZombie;
 import com.zombicidy.backend.board.combat.Combat;
 import com.zombicidy.backend.frontend.FrontendAPI;
 import com.zombicidy.frontend.scenes.Scene;
+import java.nio.IntBuffer;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL40;
-
+import org.lwjgl.system.MemoryStack;
 
 public class Window implements FrontendAPI {
   static private Window rendererInstance = null;
@@ -25,16 +30,51 @@ public class Window implements FrontendAPI {
 
   private Window() {
     if (!GLFW.glfwInit()) {
-      throw new IllegalStateException("Failed to initialize GLFW!");
+      throw new IllegalStateException("Unable to initialize GLFW");
+    }
+    long primaryMonitor = GLFW.glfwGetPrimaryMonitor();
+    GLFWVidMode vidmode = GLFW.glfwGetVideoMode(primaryMonitor);
+    if (vidmode == null) {
+      throw new RuntimeException("Failed to get video mode for monitor");
     }
 
-    window = GLFW.glfwCreateWindow(width, height, "LWJGL Window", 0, 0);
-    if (window == 0) {
-      throw new RuntimeException("Failed to create the GLFW window");
+    int x = 200;
+    int y = 100;
+    if (width == 0 && height == 0) {
+      x = 0;
+      y = 0;
+      width = vidmode.width();
+      height = vidmode.height();
+
+      // Create a windowed mode window
+      GLFW.glfwDefaultWindowHints();
+      GLFW.glfwWindowHint(GLFW.GLFW_DECORATED,
+                          GLFW.GLFW_FALSE); // Remove title bar and borders
+      GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE,
+                          GLFW.GLFW_FALSE); // Disable resizing
+      GLFW.glfwWindowHint(GLFW.GLFW_FOCUSED,
+                          GLFW.GLFW_TRUE); // Ensure window gets focus
+      GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY,
+                          GLFW.GLFW_FALSE); // Prevent minimizing on focus loss
+      window = GLFW.glfwCreateWindow(width, height, "Zombicidy", 0, 0);
+      if (window == 0) {
+        throw new RuntimeException("Failed to create GLFW window");
+      }
+      try (MemoryStack stack = stackPush()) {
+        IntBuffer xpos = stack.mallocInt(1);
+        IntBuffer ypos = stack.mallocInt(1);
+        GLFW.glfwGetMonitorPos(primaryMonitor, xpos, ypos);
+        GLFW.glfwSetWindowPos(window, xpos.get(0), ypos.get(0));
+      }
     }
+    window = GLFW.glfwCreateWindow(width, height, "Zombicidy", 0, 0);
+
+    // Center the window manually
 
     GLFW.glfwMakeContextCurrent(window);
-    GL.createCapabilities();
+    GL.createCapabilities();  // Initialize OpenGL capabilities
+    GLFW.glfwSwapInterval(1); // Enable V-Sync
+    GLFW.glfwShowWindow(window);
 
     GLFW.glfwSetKeyCallback(window, this::onKeyEvent);
     GLFW.glfwSetMouseButtonCallback(window, this::onMouseEvent);
@@ -138,9 +178,9 @@ public class Window implements FrontendAPI {
   }
 
   @Override
-  public void ZombieKilled() {
+  public void ZombieKilled(CommomZombie zombie) {
     if (this.scene != null) {
-      this.scene.ZombieKilled();
+      this.scene.ZombieKilled(zombie);
     }
   }
 
@@ -169,7 +209,7 @@ public class Window implements FrontendAPI {
   @Override
   public void PlayerTookDamage(int damage) {
     if (this.scene != null) {
-      this.scene.PlayerDealtDamage(damage);
+      this.scene.PlayerTookDamage(damage);
     }
   }
 
@@ -219,5 +259,13 @@ public class Window implements FrontendAPI {
 
   public void setEventListener(EventListener eventListener) {
     this.eventListener = eventListener;
+  }
+
+  public void setScene(Scene scene, boolean b) {
+    if (this.scene != null)
+      this.scene.clean();
+    this.scene = scene;
+    if (b)
+      this.scene.init();
   }
 }

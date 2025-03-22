@@ -1,5 +1,6 @@
 package com.zombicidy.frontend.engine.components;
 
+import com.zombicidy.frontend.GarbageDisposer;
 import com.zombicidy.frontend.engine.math.Vector2D;
 import com.zombicidy.frontend.engine.math.Vector3D;
 import java.nio.ByteBuffer;
@@ -7,6 +8,7 @@ import java.nio.ByteOrder;
 import java.util.List;
 import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
+
 
 public class Mesh3D implements Component {
   final private int vbo;
@@ -110,9 +112,11 @@ public class Mesh3D implements Component {
   }
 
   @Override
-  public void clean() {
-    GL40.glDeleteBuffers(vbo);
-    GL40.glDeleteVertexArrays(vao);
+  public void finalize() {
+    GarbageDisposer.addCleanupTask(() -> {
+      GL40.glDeleteBuffers(vbo);
+      GL40.glDeleteVertexArrays(vao);
+    });
   }
 
   @Override

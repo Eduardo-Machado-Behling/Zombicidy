@@ -2,9 +2,9 @@ package com.zombicidy.frontend;
 
 import com.zombicidy.backend.EventListener;
 import com.zombicidy.backend.board.baseclasses.Grid;
+import com.zombicidy.backend.board.characters.CommomZombie;
 import com.zombicidy.backend.board.combat.Combat;
 import com.zombicidy.backend.frontend.BaseFrontend;
-import com.zombicidy.frontend.scenes.Menu;
 import com.zombicidy.frontend.scenes.Play;
 
 public class FrontEnd extends BaseFrontend {
@@ -18,8 +18,9 @@ public class FrontEnd extends BaseFrontend {
 
   public void main() {
     Window win = Window.get();
-    win.setScene(new Menu());
     win.setEventListener(el);
+    el.run("hard");
+    win.setScene(new Play(true));
 
     win.run();
   }
@@ -35,8 +36,8 @@ public class FrontEnd extends BaseFrontend {
   }
 
   @Override
-  public void ZombieKilled() {
-    Window.get().ZombieKilled();
+  public void ZombieKilled(CommomZombie zombie) {
+    Window.get().ZombieKilled(zombie);
   }
 
   @Override

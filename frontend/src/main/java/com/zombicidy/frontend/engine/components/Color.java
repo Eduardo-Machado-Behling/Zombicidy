@@ -4,8 +4,8 @@ import com.zombicidy.frontend.ShaderManager;
 import com.zombicidy.frontend.engine.math.Vector3D;
 
 public class Color implements Component {
-  private final Vector3D color;
-  private final float blendFactor;
+  private Vector3D color;
+  private float blendFactor;
 
   public Color(Vector3D color, float blendFactor) {
     this.color = color;
@@ -22,5 +22,15 @@ public class Color implements Component {
   public void unbind() {}
 
   @Override
-  public void clean() {}
+  public void finalize() {}
+
+  public Vector3D getColor() { return color; }
+
+  public float getBlendFactor() { return blendFactor; }
+
+  public void setColor(Vector3D color) { this.color = color; }
+
+  public void setBlendFactor(float blendFactor) {
+    this.blendFactor = blendFactor;
+  }
 }

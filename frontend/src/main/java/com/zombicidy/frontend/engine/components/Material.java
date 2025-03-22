@@ -4,7 +4,6 @@ import com.zombicidy.frontend.ShaderManager;
 import com.zombicidy.frontend.engine.math.Vector3D;
 import java.util.List;
 
-
 public class Material implements Component {
 
   public static class MaterialData {
@@ -76,7 +75,5 @@ public class Material implements Component {
   public void unbind() {}
 
   @Override
-  public void clean() {
-    // GL40.glDeleteTextures(texts);
-  }
+  public void finalize() {}
 }

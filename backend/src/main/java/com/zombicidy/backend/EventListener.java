@@ -1,7 +1,8 @@
 package com.zombicidy.backend;
 
-import com.zombicidy.backend.board.*;
+import com.zombicidy.backend.board.Board;
 import com.zombicidy.backend.board.baseclasses.Grid;
+import com.zombicidy.backend.board.characters.CommomZombie;
 import com.zombicidy.backend.board.combat.Combat;
 import com.zombicidy.backend.frontend.BaseFrontend;
 import com.zombicidy.backend.frontend.terminal.Terminal;
@@ -13,11 +14,11 @@ public class EventListener {
   private String diff;
 
   public EventListener(BaseFrontend frontend) {
-    this.board = new Board(this);
     this.terminal = new Terminal(this);
   }
 
   public void run(String diff) {
+    this.board = new Board(this);
     this.diff = diff;
     this.board.StartBoard(this.diff);
     this.terminal.loadMap();
@@ -62,10 +63,10 @@ public class EventListener {
       frontend.SurpriseEncounter();
   }
 
-  public void ZombieKilled() {
-    terminal.ZombieKilled();
+  public void ZombieKilled(CommomZombie zombie) {
+    terminal.ZombieKilled(zombie);
     if (frontend != null)
-      frontend.ZombieKilled();
+      frontend.ZombieKilled(zombie);
   }
 
   public void GameLose() {
@@ -96,7 +97,11 @@ public class EventListener {
       frontend.Redraw(position, grid);
   }
 
-  public void MovePlayer(int[] position) { board.Input(position); }
+  public void MovePlayer(int[] position) {
+    PrintTerminal();
+    board.Input(position);
+    PrintTerminal();
+  }
 
   public void PlayerGunNoAmmo() {
     terminal.PlayerGunNoAmmo();
@@ -110,9 +115,14 @@ public class EventListener {
       frontend.PlayerNoGun();
   }
 
-  public void RestartBoard() { board.StartBoard(this.diff); }
+  public void RestartBoard() {
+    this.board = new Board(this);
+    board.StartBoard(this.diff);
+  }
 
   public BaseFrontend getFrontend() { return frontend; }
 
   public void setFrontend(BaseFrontend frontend) { this.frontend = frontend; }
+
+  public Board getBoard() { return board; }
 }

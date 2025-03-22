@@ -1,6 +1,7 @@
 package com.zombicidy.frontend.scenes;
 
 import com.zombicidy.backend.board.baseclasses.Grid;
+import com.zombicidy.backend.board.characters.CommomZombie;
 import com.zombicidy.frontend.AnimationManager;
 import com.zombicidy.frontend.AssetManager;
 import com.zombicidy.frontend.WavefrontLoader;
@@ -20,7 +21,6 @@ import com.zombicidy.frontend.engine.math.Vector3D;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL40;
-
 
 public class Menu extends Scene {
   private final Engine.GameObject[] go = new Engine.GameObject[50];
@@ -42,6 +42,7 @@ public class Menu extends Scene {
   private boolean rool = false;
 
   public Menu() {
+    UUID.clear();
     camera = Camera.Perspective(fov, Window.get().getAspectRatio(), 1.0f, 10.0f)
                  .lookAt(new Vector3D(0.48f, -2.43f, -3.70f),
                          new Vector3D(0.18f, 0.46f, 0.87f).normalize(),
@@ -171,9 +172,9 @@ public class Menu extends Scene {
       GLFW.glfwGetCursorPos(window, coords[0], coords[1]);
       Vector2D vec = new Vector2D((float)coords[0][0], (float)coords[1][0]);
 
-      int uuid = Engine.get().getUUID((int)vec.x, (int)vec.y);
-      if (uuid > 0 && uuid - 1 < go.length)
-        pressedCell(uuid - 1);
+      int uuid = Engine.get().getUUID((int)vec.x, (int)vec.y) - begin;
+      if (uuid >= 0 && uuid - 1 < go.length)
+        pressedCell(uuid);
     }
   }
 
@@ -227,7 +228,6 @@ public class Menu extends Scene {
 
     Transform t = (Transform)player.getComponent().get("transform");
     Vector3D origRot = new Vector3D(t.getRotation());
-    Vector3D origPos = new Vector3D(t.getTranslation());
     Vector3D target = new Vector3D(origRot);
     if (delta.x < 0) {
       target.z = 90;
@@ -249,6 +249,9 @@ public class Menu extends Scene {
     switch (i) {
     case 0:
       debug = !debug;
+      player.setMesh(AssetManager.get()
+                         .getWavefront(debug ? "hero_torch" : "player")
+                         .mesh);
       break;
     case 4:
       Window.get().terminate();
@@ -273,6 +276,8 @@ public class Menu extends Scene {
   @Override
   public void clean() {
     Engine.get().clear();
+    AssetManager.get().clearTextures();
+    AssetManager.get().clearWavefronts();
   }
 
   @Override
@@ -467,7 +472,7 @@ public class Menu extends Scene {
   }
 
   @Override
-  public void ZombieKilled() {
+  public void ZombieKilled(CommomZombie zombie) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException(
         "Unimplemented method 'ZombieKilled'");

@@ -93,4 +93,6 @@ public class AnimationManager {
       animations.remove(seq);
     }
   }
+
+  public void clear() { animations.clear(); }
 }

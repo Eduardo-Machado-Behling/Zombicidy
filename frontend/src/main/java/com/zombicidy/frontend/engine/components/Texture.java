@@ -1,5 +1,6 @@
 package com.zombicidy.frontend.engine.components;
 
+import com.zombicidy.frontend.GarbageDisposer;
 import com.zombicidy.frontend.ShaderManager;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL40;
@@ -28,8 +29,7 @@ public class Texture implements Component {
     public final int textureMaxFilter;
 
     public TextureParam(int textureWrapS, int textureWrapT,
-                        int textureMinFilter, int textureMaxFilter,
-                        float blendFactor) {
+                        int textureMinFilter, int textureMaxFilter) {
       this.textureWrapS = textureWrapS;
       this.textureWrapT = textureWrapT;
       this.textureMinFilter = textureMinFilter;
@@ -57,7 +57,7 @@ public class Texture implements Component {
     GL40.glTexParameteri(GL40.GL_TEXTURE_2D, GL40.GL_TEXTURE_MAG_FILTER,
                          param.textureMinFilter);
 
-    int glChannel = data.channels > 3 ? GL40.GL_RGBA : GL40.GL_RGB;
+    int glChannel = GL40.GL_RGBA;
 
     GL40.glTexImage2D(GL40.GL_TEXTURE_2D, 0, glChannel, data.width, data.height,
                       0, glChannel, GL40.GL_UNSIGNED_BYTE, data.data);
@@ -72,8 +72,9 @@ public class Texture implements Component {
   }
 
   @Override
-  public void clean() {
-    GL40.glDeleteTextures(textId);
+  public void finalize() {
+    System.out.println("freed: " + getClass().getName());
+    GarbageDisposer.addCleanupTask(() -> { GL40.glDeleteTextures(textId); });
   }
 
   @Override

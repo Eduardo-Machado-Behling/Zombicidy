@@ -288,4 +288,18 @@ public class SquareMatrix {
   }
 
   public int SizeBytes() { return size * size * Float.BYTES; }
+
+  public static SquareMatrix orthographic(float left, float right, float bottom,
+                                          float top, float near, float far) {
+    SquareMatrix matrix = SquareMatrix.identity(4);
+
+    matrix.data[0] = 2.0f / (right - left);             // Scale X
+    matrix.data[5] = 2.0f / (top - bottom);             // Scale Y
+    matrix.data[10] = -2.0f / (far - near);             // Scale Z
+    matrix.data[12] = -(right + left) / (right - left); // Translate X
+    matrix.data[13] = -(top + bottom) / (top - bottom); // Translate Y
+    matrix.data[14] = -(far + near) / (far - near);     // Translate Z
+    matrix.data[15] = 1.0f; // Homogeneous coordinate
+    return matrix;
+  }
 }

@@ -1,6 +1,7 @@
 package com.zombicidy.frontend.scenes;
 
 import com.zombicidy.backend.board.baseclasses.Grid;
+import com.zombicidy.backend.board.characters.CommomZombie;
 import com.zombicidy.backend.board.combat.Combat;
 import com.zombicidy.backend.frontend.FrontendAPI;
 
@@ -26,7 +27,7 @@ public abstract class Scene implements FrontendAPI {
 
   public abstract void Combat(Combat combat);
 
-  public abstract void ZombieKilled();
+  public abstract void ZombieKilled(CommomZombie zombie);
 
   public abstract void UseBandage(boolean actionWasMade);
 

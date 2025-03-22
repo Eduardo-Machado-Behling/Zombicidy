@@ -4,5 +4,5 @@ public interface Component {
   void bind();
   void unbind();
 
-  void clean();
+  void finalize();
 }

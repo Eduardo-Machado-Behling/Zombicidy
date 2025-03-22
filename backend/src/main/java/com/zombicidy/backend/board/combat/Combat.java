@@ -2,7 +2,8 @@ package com.zombicidy.backend.board.combat;
 
 import com.zombicidy.backend.EventListener;
 import com.zombicidy.backend.board.Board;
-import com.zombicidy.backend.board.characters.*;
+import com.zombicidy.backend.board.characters.CommomZombie;
+import com.zombicidy.backend.board.characters.Player;
 
 public class Combat {
   private Player player;
@@ -11,6 +12,7 @@ public class Combat {
   private Board board;
   private EventListener eventListener;
   private Boolean actionMade = true;
+  private boolean reground = false;
 
   public Combat(Player player, CommomZombie zombie, Board board,
                 EventListener eventListener) {
@@ -26,7 +28,8 @@ public class Combat {
       eventListener.SurpriseEncounter();
       PlayerTestPerception();
     }
-    eventListener.InitiateCombat(this);
+    if (player.IsAlive())
+      eventListener.InitiateCombat(this);
   }
 
   public CommomZombie getZombie() { return zombie; }
@@ -40,8 +43,8 @@ public class Combat {
       eventListener.PlayerTookDamage(1);
     }
     if (!player.IsAlive()) {
-      eventListener.GameLose();
       eventListener.FinishCombat();
+      eventListener.GameLose();
     }
   }
 
@@ -97,10 +100,10 @@ public class Combat {
       if (zombie.IsAlive()) {
         PlayerTestPerception();
       } else {
+        board.FinishCombat(zombie);
         if (zombie.GetType().equals("GiantZombie")) {
           eventListener.GameWin();
         }
-        board.FinishCombat(zombie);
       }
     }
   }

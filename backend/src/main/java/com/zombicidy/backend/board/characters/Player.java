@@ -7,6 +7,7 @@ public class Player extends Character {
   private ArrayList<Item> items = new ArrayList<Item>();
   private Gun playerGun;
   private BeisebolBat playerBeisebalBat;
+  private int bandageAmount = 0;
 
   public Player(int healthPoints, int movement, int perception) {
     super(healthPoints, movement);
@@ -34,6 +35,7 @@ public class Player extends Character {
 
     if (item instanceof Bandage) {
       items.add(item);
+      bandageAmount += 1;
     }
   }
 
@@ -71,6 +73,7 @@ public class Player extends Character {
       if (item instanceof Bandage) {
         Heal(((Bandage)item).Heal());
         items.remove(item);
+        bandageAmount -= 1;
         return true;
       }
     }
@@ -85,4 +88,6 @@ public class Player extends Character {
       return false;
     }
   }
+
+  public int getBandageAmount() { return bandageAmount; }
 }

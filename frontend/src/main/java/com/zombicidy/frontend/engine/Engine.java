@@ -3,14 +3,17 @@ package com.zombicidy.frontend.engine;
 import com.zombicidy.frontend.AssetManager;
 import com.zombicidy.frontend.ShaderManager;
 import com.zombicidy.frontend.Window;
+import com.zombicidy.frontend.engine.components.Color;
 import com.zombicidy.frontend.engine.components.Component;
+import com.zombicidy.frontend.engine.components.Mesh2D;
 import com.zombicidy.frontend.engine.components.Mesh3D;
 import com.zombicidy.frontend.engine.components.Shader;
+import com.zombicidy.frontend.engine.components.Texture;
 import com.zombicidy.frontend.engine.components.Transform;
 import com.zombicidy.frontend.engine.lights.Light;
 import com.zombicidy.frontend.engine.lights.PointLight;
 import com.zombicidy.frontend.engine.lights.SpotLight;
-import com.zombicidy.frontend.engine.math.Vector3D;
+import com.zombicidy.frontend.engine.math.SquareMatrix;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -20,15 +23,74 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL40;
 
 public final class Engine {
+
+  public class UIObject {
+    private Mesh2D mesh = null;
+    private Texture texture = null;
+    private Color color = null;
+    private Shader shader = null;
+    private boolean visible = true;
+    private final HashMap<String, Component> components = new HashMap<>();
+
+    public UIObject(Mesh2D mesh, Texture texture, Color color, Shader shader) {
+      this.mesh = mesh;
+      this.texture = texture;
+      this.color = color;
+      this.shader = shader;
+
+      components.put("texture", texture);
+      components.put("color", color);
+    }
+
+    public UIObject() {}
+
+    public Texture getTexture() { return texture; }
+
+    public void setTexture(Texture texture) {
+      components.put("texture", texture);
+      this.texture = texture;
+    }
+
+    public Color getColor() {
+      components.put("color", color);
+      return color;
+    }
+
+    public void setColor(Color color) { this.color = color; }
+
+    public Mesh2D getMesh() { return mesh; }
+
+    public void setMesh(Mesh2D mesh) {
+      if (this.mesh != null)
+        Engine.get().changeMesh(this, mesh);
+      this.mesh = mesh;
+    }
+
+    public Shader getShader() { return shader; }
+
+    public void setShader(Shader shader) { this.shader = shader; }
+
+    public HashMap<String, Component> getComponent() { return this.components; }
+
+    public void hide() { visible = false; }
+
+    public void show() { visible = true; }
+
+    public boolean isVisible() { return visible; }
+  }
   public class GameObject {
-    private Mesh3D mesh;
-    private Shader shader;
+    private Mesh3D mesh = null;
+    private Shader shader = null;
     private final HashMap<String, Component> components = new HashMap<>();
     private boolean visible = true;
 
     public Mesh3D getMesh() { return mesh; }
 
-    public void setMesh(Mesh3D mesh) { this.mesh = mesh; }
+    public void setMesh(Mesh3D mesh) {
+      if (this.mesh != null)
+        Engine.get().changeMesh(this, mesh);
+      this.mesh = mesh;
+    }
 
     public Shader getShader() { return shader; }
 
@@ -46,10 +108,17 @@ public final class Engine {
     public void setVisible(boolean visible) { this.visible = visible; }
   }
 
-  final private HashMap<Shader, HashMap<Mesh3D, ArrayList<GameObject>>>
-      gameObjects = new HashMap<>();
+  private HashMap<Shader, HashMap<Mesh3D, ArrayList<GameObject>>> gameObjects =
+      new HashMap<>();
 
-  final private ArrayList<Light> lights = new ArrayList<>();
+  private HashMap<Shader, HashMap<Mesh2D, ArrayList<UIObject>>> uiObjects =
+      new HashMap<>();
+
+  private HashMap<Shader, HashMap<Mesh3D, ArrayList<GameObject>>>
+      gameObjectsReserve = new HashMap<>();
+
+  private ArrayList<Light> lights = new ArrayList<>();
+  private ArrayList<Light> lightsReserve = new ArrayList<>();
   final private int lightsMax = 10;
 
   private static Engine instance = null;
@@ -100,6 +169,30 @@ public final class Engine {
     GL40.glBindFramebuffer(GL40.GL_FRAMEBUFFER, 0);
   }
 
+  public void changeMesh(UIObject uiObject, Mesh2D mesh) {
+    HashMap<Mesh2D, ArrayList<UIObject>> shad =
+        uiObjects.get(uiObject.getShader());
+    shad.get(uiObject.getMesh()).remove(uiObject);
+
+    if (!shad.containsKey(mesh)) {
+      shad.put(mesh, new ArrayList<>());
+    }
+
+    shad.get(mesh).add(uiObject);
+  }
+
+  public void changeMesh(GameObject gameObject, Mesh3D mesh) {
+    HashMap<Mesh3D, ArrayList<GameObject>> shad =
+        gameObjects.get(gameObject.getShader());
+    shad.get(gameObject.getMesh()).remove(gameObject);
+
+    if (!shad.containsKey(mesh)) {
+      shad.put(mesh, new ArrayList<>());
+    }
+
+    shad.get(mesh).add(gameObject);
+  }
+
   public static Engine get() {
     if (instance == null) {
       instance = new Engine();
@@ -114,10 +207,64 @@ public final class Engine {
   public void setCamera(Camera camera) { this.camera = camera; }
   public Camera getCamera() { return this.camera; }
 
+  public void reserve() {
+    gameObjectsReserve = gameObjects;
+    gameObjects = new HashMap<>();
+
+    lightsReserve = lights;
+    lights = new ArrayList<>();
+  }
+
+  public void unreserve() {
+    gameObjects = gameObjectsReserve;
+    lights = lightsReserve;
+  }
+
   public void render(float elapsed_time) {
     if (mouseEnable)
       renderMouse();
     render3D(elapsed_time);
+    render2D(elapsed_time);
+  }
+
+  private void render2D(float elapsed_time) {
+    GL40.glEnable(GL40.GL_BLEND);
+    // GL40.glDisable(GL40.GL_DEPTH_TEST);
+    GL40.glBlendFunc(GL40.GL_SRC_ALPHA, GL40.GL_ONE_MINUS_SRC_ALPHA);
+    GL40.glClear(GL40.GL_DEPTH_BUFFER_BIT);
+    GL40.glEnable(GL40.GL_ALPHA_TEST);
+    GL40.glAlphaFunc(GL40.GL_GREATER, 0.1f);
+
+    for (Entry<Shader, HashMap<Mesh2D, ArrayList<UIObject>>> entry :
+         uiObjects.entrySet()) {
+
+      entry.getKey().bind();
+      SquareMatrix orthoMatrix = SquareMatrix.orthographic(
+          0, Window.get().width(), Window.get().height(), 0, -2, 2);
+      ShaderManager.get().setUniform("m_projection", orthoMatrix);
+
+      for (Entry<Mesh2D, ArrayList<UIObject>> en :
+           entry.getValue().entrySet()) {
+
+        en.getKey().bind();
+
+        for (UIObject go : en.getValue()) {
+
+          if (!go.isVisible())
+            continue;
+          for (Entry<String, Component> elem : go.getComponent().entrySet()) {
+            elem.getValue().bind();
+          }
+
+          GL40.glDrawArrays(GL40.GL_TRIANGLE_STRIP, 0,
+                            go.getMesh().verticeAmount());
+
+          for (Entry<String, Component> elem : go.getComponent().entrySet()) {
+            elem.getValue().unbind();
+          }
+        }
+      }
+    }
   }
 
   private void renderMouse() {
@@ -166,6 +313,8 @@ public final class Engine {
   }
 
   private void render3D(float elapsed_time) {
+    GL40.glEnable(GL40.GL_DEPTH_TEST);
+    GL40.glClear(GL40.GL_COLOR_BUFFER_BIT | GL40.GL_DEPTH_BUFFER_BIT);
     for (Entry<Shader, HashMap<Mesh3D, ArrayList<GameObject>>> entry :
          gameObjects.entrySet()) {
 
@@ -214,9 +363,14 @@ public final class Engine {
   }
 
   public void clear() {
-    gameObjects.clear();
     lights.clear();
+    clearGameObjects();
+    clearUIObjects();
   }
+
+  private void clearGameObjects() { gameObjects.clear(); }
+
+  private void clearUIObjects() { uiObjects.clear(); }
 
   public boolean addLight(Light light) {
     if (lightsMax == lights.size())
@@ -227,6 +381,15 @@ public final class Engine {
   }
 
   public void rmvLight(Light light) { lights.remove(light); }
+
+  public UIObject makeUIObject(Mesh2D mesh, Shader shader, Texture texture,
+                               Color color) {
+    UIObject uiObject = new UIObject(mesh, texture, color, shader);
+
+    addUIObject(uiObject);
+
+    return uiObject;
+  }
 
   public GameObject makeGameObject(Mesh3D mesh) {
     return makeGameObject(mesh, new Transform(),
@@ -245,15 +408,8 @@ public final class Engine {
     go.setShader(shader);
     go.addComponent("transform", transform);
 
-    if (!gameObjects.containsKey(shader))
-      gameObjects.put(shader, new HashMap<>());
+    addGameObject(go);
 
-    HashMap<Mesh3D, ArrayList<GameObject>> inter = gameObjects.get(shader);
-
-    if (!inter.containsKey(mesh))
-      inter.put(mesh, new ArrayList<>());
-
-    inter.get(mesh).add(go);
     return go;
   }
 
@@ -269,41 +425,43 @@ public final class Engine {
     inter.get(go.getMesh()).add(go);
   }
 
-  public boolean rayIntersectsAABB(Vector3D rayOrigin, Vector3D rayDir,
-                                   Vector3D minBounds, Vector3D maxBounds) {
-    float tmin = Float.NEGATIVE_INFINITY;
-    float tmax = Float.POSITIVE_INFINITY;
-
-    // X planes
-    if (Math.abs(rayDir.x) > 1e-6) {
-      float tx1 = (minBounds.x - rayOrigin.x) / rayDir.x;
-      float tx2 = (maxBounds.x - rayOrigin.x) / rayDir.x;
-      tmin = Math.max(tmin, Math.min(tx1, tx2));
-      tmax = Math.min(tmax, Math.max(tx1, tx2));
-    } else if (rayOrigin.x < minBounds.x || rayOrigin.x > maxBounds.x) {
-      return false;
+  public void removeGameObject(GameObject ent) {
+    try {
+      gameObjects.get(ent.getShader()).get(ent.getMesh()).remove(ent);
+    } catch (NullPointerException e) {
+      return;
     }
+  }
 
-    // Y planes
-    if (Math.abs(rayDir.y) > 1e-6) {
-      float ty1 = (minBounds.y - rayOrigin.y) / rayDir.y;
-      float ty2 = (maxBounds.y - rayOrigin.y) / rayDir.y;
-      tmin = Math.max(tmin, Math.min(ty1, ty2));
-      tmax = Math.min(tmax, Math.max(ty1, ty2));
-    } else if (rayOrigin.y < minBounds.y || rayOrigin.y > maxBounds.y) {
-      return false;
+  public void addGameObject(GameObject go) {
+    if (!gameObjects.containsKey(go.getShader()))
+      gameObjects.put(go.getShader(), new HashMap<>());
+
+    HashMap<Mesh3D, ArrayList<GameObject>> inter =
+        gameObjects.get(go.getShader());
+
+    if (!inter.containsKey(go.getMesh()))
+      inter.put(go.getMesh(), new ArrayList<>());
+
+    inter.get(go.getMesh()).add(go);
+  }
+
+  public void addUIObject(UIObject uio) {
+    if (!uiObjects.containsKey(uio.getShader()))
+      uiObjects.put(uio.getShader(), new HashMap<>());
+
+    HashMap<Mesh2D, ArrayList<UIObject>> inter = uiObjects.get(uio.getShader());
+
+    if (!inter.containsKey(uio.getMesh()))
+      inter.put(uio.getMesh(), new ArrayList<>());
+
+    inter.get(uio.getMesh()).add(uio);
+  }
+
+  public void removeUIObject(UIObject ent) {
+    try {
+      uiObjects.get(ent.getShader()).get(ent.getMesh()).remove(ent);
+    } catch (NullPointerException e) {
     }
-
-    // Z planes
-    if (Math.abs(rayDir.z) > 1e-6) {
-      float tz1 = (minBounds.z - rayOrigin.z) / rayDir.z;
-      float tz2 = (maxBounds.z - rayOrigin.z) / rayDir.z;
-      tmin = Math.max(tmin, Math.min(tz1, tz2));
-      tmax = Math.min(tmax, Math.max(tz1, tz2));
-    } else if (rayOrigin.z < minBounds.z || rayOrigin.z > maxBounds.z) {
-      return false;
-    }
-
-    return tmax >= tmin && tmax >= 0;
   }
 }

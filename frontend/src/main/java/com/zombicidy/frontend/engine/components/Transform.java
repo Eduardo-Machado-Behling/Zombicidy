@@ -35,7 +35,7 @@ public class Transform implements Component {
   }
 
   @Override
-  public void clean() {}
+  public void finalize() {}
 
   @Override
   public void unbind() {}

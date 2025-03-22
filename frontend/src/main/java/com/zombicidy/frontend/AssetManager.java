@@ -28,6 +28,10 @@ public class AssetManager {
     return instance;
   }
 
+  public void clearWavefronts() { wavefronts.clear(); }
+
+  public void clearTextures() { textures.clear(); }
+
   public Texture.TextureData getTexture(String name) {
     if (!textures.containsKey(name)) {
       loadTexture(name);

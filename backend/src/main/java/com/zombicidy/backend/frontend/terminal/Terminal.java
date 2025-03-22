@@ -3,10 +3,10 @@ package com.zombicidy.backend.frontend.terminal;
 import com.zombicidy.backend.EventListener;
 import com.zombicidy.backend.board.baseclasses.Grid;
 import com.zombicidy.backend.board.characters.CommomZombie;
-import com.zombicidy.backend.board.characters.Player;
 import com.zombicidy.backend.board.combat.Combat;
 import com.zombicidy.backend.frontend.BaseFrontend;
 import java.util.Scanner;
+
 
 public class Terminal extends BaseFrontend {
   private Grid board[][];
@@ -34,36 +34,38 @@ public class Terminal extends BaseFrontend {
   public void FinishCombat() { combatBool = false; }
 
   public void Combat(Combat combat) {
-    System.out.println("Combat Initiated");
-    combatBool = true;
-    CommomZombie zombie = combat.getZombie();
-    Player player = combat.getPlayer();
-    int choise;
-    while (combatBool) {
-      System.out.println(zombie.GetType() + " " + zombie.getHealthPoints());
-      System.out.println("Player " + player.getHealthPoints());
-      System.out.println(
-          " 1: Attack Hand | 2: Shoot | 3:Use Bandage | 4: Run ");
-      choise = reader.nextInt();
+    // System.out.println("Combat Initiated");
+    // combatBool = true;
+    // CommomZombie zombie = combat.getZombie();
+    // Player player = combat.getPlayer();
+    // int choise;
+    // while (combatBool) {
+    //   System.out.println(zombie.GetType() + " " + zombie.getHealthPoints());
+    //   System.out.println("Player " + player.getHealthPoints());
+    //   System.out.println(
+    //       " 1: Attack Hand | 2: Shoot | 3:Use Bandage | 4: Run ");
+    // choise = reader.nextInt();
 
-      switch (choise) {
-      case 1:
-        eventListener.CombatAction("Attack");
-        break;
-      case 2:
-        eventListener.CombatAction("Shoot");
-        break;
-      case 3:
-        eventListener.CombatAction("Bandage");
-        break;
-      case 4:
-        eventListener.CombatAction("Run");
-        break;
-      }
-    }
+    // switch (choise) {
+    // case 1:
+    //   eventListener.CombatAction("Attack");
+    //   break;
+    // case 2:
+    //   eventListener.CombatAction("Shoot");
+    //   break;
+    // case 3:
+    //   eventListener.CombatAction("Bandage");
+    //   break;
+    // case 4:
+    //   eventListener.CombatAction("Run");
+    //   break;
+    // }
+    // }
   }
 
-  public void ZombieKilled() { System.out.println("Zombie Killed"); }
+  public void ZombieKilled(CommomZombie zombie) {
+    System.out.println("Zombie Killed");
+  }
 
   public void UseBandage(boolean actionWasMade) {
     if (actionWasMade) {
