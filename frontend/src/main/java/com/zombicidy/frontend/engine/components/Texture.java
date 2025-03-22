@@ -5,6 +5,7 @@ import com.zombicidy.frontend.ShaderManager;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL40;
 
+
 public class Texture implements Component {
   private final int textId;
 
@@ -55,12 +56,13 @@ public class Texture implements Component {
     GL40.glTexParameteri(GL40.GL_TEXTURE_2D, GL40.GL_TEXTURE_MIN_FILTER,
                          param.textureMinFilter);
     GL40.glTexParameteri(GL40.GL_TEXTURE_2D, GL40.GL_TEXTURE_MAG_FILTER,
-                         param.textureMinFilter);
+                         param.textureMaxFilter);
 
     int glChannel = GL40.GL_RGBA;
 
-    GL40.glTexImage2D(GL40.GL_TEXTURE_2D, 0, glChannel, data.width, data.height,
-                      0, glChannel, GL40.GL_UNSIGNED_BYTE, data.data);
+    GL40.glTexImage2D(GL40.GL_TEXTURE_2D, 0, GL40.GL_RGBA8, data.width,
+                      data.height, 0, glChannel, GL40.GL_UNSIGNED_BYTE,
+                      data.data);
     GL40.glGenerateMipmap(GL40.GL_TEXTURE_2D);
   }
 

@@ -20,7 +20,7 @@ public class EventListener {
   public void run(String diff) {
     this.board = new Board(this);
     this.diff = diff;
-    this.board.StartBoard(this.diff);
+    this.board.StartBoard(this.diff, false);
     this.terminal.loadMap();
     PrintTerminal();
   }
@@ -115,10 +115,7 @@ public class EventListener {
       frontend.PlayerNoGun();
   }
 
-  public void RestartBoard() {
-    this.board = new Board(this);
-    board.StartBoard(this.diff);
-  }
+  public void RestartBoard() { board.StartBoard(this.diff, true); }
 
   public BaseFrontend getFrontend() { return frontend; }
 

@@ -1,11 +1,13 @@
 package com.zombicidy.backend.board;
 
+import com.zombicidy.backend.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -22,7 +24,8 @@ public class FileReader {
              new BufferedReader(new InputStreamReader(inputStream))) {
 
       if (inputStream == null) {
-        System.out.println("File not found: " + filePath);
+        Logger.get().logError(Logger.Verbose.INFO,
+                              "File not found: " + filePath);
         return gameSettings;
       }
 
@@ -34,20 +37,29 @@ public class FileReader {
 
       return gameSettings;
     } catch (IOException e) {
-      System.out.println("An error occurred while reading the file.");
+      Logger.get().logError(Logger.Verbose.INFO,
+                            "An error occurred while reading the file.");
+
       e.printStackTrace();
     }
 
     return gameSettings;
   }
 
-  public String[][] ReadRamdomMap() {
-    Random rand = new Random();
+  public class MapData {
+    public int id;
+    public String[][] map;
+
+    public MapData(int id, String[][] map) {
+      this.id = id;
+      this.map = map;
+    }
+  }
+
+  public MapData ReadMap(int i) {
     String[][] map = new String[10][10];
     int x = 0;
-
-    // Generating a random map file path (map1.csv, map2.csv, map3.csv)
-    String filePath = "config/maps/map" + (rand.nextInt(3) + 1) + ".csv";
+    String filePath = "config/maps/map" + i + ".csv";
 
     // Using ClassLoader to read the resource as InputStream
     InputStream myObj =
@@ -55,7 +67,7 @@ public class FileReader {
 
     if (myObj == null) {
       System.out.println("File not found: " + filePath);
-      return map;
+      return new MapData(i, map);
     }
 
     try (Scanner myReader = new Scanner(myObj)) {
@@ -75,6 +87,11 @@ public class FileReader {
       e.printStackTrace();
     }
 
-    return map;
+    return new MapData(i, map);
+  }
+
+  public MapData ReadRamdomMap() {
+    Random rand = new Random();
+    return ReadMap((rand.nextInt(3) + 1));
   }
 }

@@ -727,7 +727,6 @@ public class Combat extends Scene {
 
   @Override
   public void PlayerDealtDamage(int damage) {
-    enemyHP.getComponent().put("variables", new Variable());
     Variable vars = (Variable)enemyHP.getComponent().get("variables");
     vars.addVariable("progress", enemy.getHealthPoints() / (float)enemyMaxHP);
 

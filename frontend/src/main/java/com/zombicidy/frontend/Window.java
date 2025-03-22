@@ -13,6 +13,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL40;
+import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryStack;
 
 public class Window implements FrontendAPI {
@@ -29,6 +30,7 @@ public class Window implements FrontendAPI {
   private double curr_time;
 
   private Window() {
+
     if (!GLFW.glfwInit()) {
       throw new IllegalStateException("Unable to initialize GLFW");
     }
@@ -38,11 +40,7 @@ public class Window implements FrontendAPI {
       throw new RuntimeException("Failed to get video mode for monitor");
     }
 
-    int x = 200;
-    int y = 100;
     if (width == 0 && height == 0) {
-      x = 0;
-      y = 0;
       width = vidmode.width();
       height = vidmode.height();
 
@@ -75,6 +73,21 @@ public class Window implements FrontendAPI {
     GL.createCapabilities();  // Initialize OpenGL capabilities
     GLFW.glfwSwapInterval(1); // Enable V-Sync
     GLFW.glfwShowWindow(window);
+
+    GL43.glDebugMessageCallback(
+        (source, type, id, severity, length, message, userParam)
+            -> {
+          System.err.println("GL CALLBACK: " +
+                             org.lwjgl.opengl.GLDebugMessageCallback.getMessage(
+                                 length, message));
+        },
+        0);
+    GL43.glEnable(GL43.GL_DEBUG_OUTPUT);
+    System.out.println("Renderer: " + GL40.glGetString(GL40.GL_RENDERER));
+    System.out.println("Vendor: " + GL40.glGetString(GL40.GL_VENDOR));
+    System.out.println("OpenGL Version: " + GL40.glGetString(GL40.GL_VERSION));
+    System.out.println("GLSL Version: " +
+                       GL40.glGetString(GL40.GL_SHADING_LANGUAGE_VERSION));
 
     GLFW.glfwSetKeyCallback(window, this::onKeyEvent);
     GLFW.glfwSetMouseButtonCallback(window, this::onMouseEvent);

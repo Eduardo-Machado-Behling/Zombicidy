@@ -19,6 +19,7 @@ public class Board {
   private EventListener eventListener;
   private String[][] map;
   private boolean reground;
+  private int mapId;
 
   public Board(EventListener eventListener) {
     this.eventListener = eventListener;
@@ -28,9 +29,18 @@ public class Board {
     return board[position[0]][position[1]];
   }
 
-  public void StartBoard(String difficulty) {
+  public void StartBoard(String difficulty, boolean same) {
+    zombies.clear();
     FileReader fileReader = new FileReader();
-    map = fileReader.ReadRamdomMap();
+    FileReader.MapData data;
+    if (same) {
+      data = fileReader.ReadMap(mapId);
+    } else {
+      data = fileReader.ReadRamdomMap();
+    }
+
+    map = data.map;
+    mapId = data.id;
     gameSettings = fileReader.ReadSettings(difficulty);
 
     int[] position = new int[2];
